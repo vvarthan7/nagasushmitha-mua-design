@@ -1,0 +1,62 @@
+:root {
+  /* Light palette */
+  --white: #ffffff;
+  --ink: #2c1a1c;
+  --plum: #7d3646;
+  --rust: #b0543f;
+  --clay: #d99a86;
+  --blush: #f5e2d9;
+  --blush-soft: #fbeee8;
+  --border: #e6bfb2;
+  --border-soft: #f0dcd4;
+  --border-faq: #eacfc4;
+  --text: #6b4a48;
+  --text-muted: #7a5a56;
+  --meta: #a98a83;
+  --dot: #e0b1a4;
+
+  /* Dark sections (academy, enquire, footer) */
+  --academy-text: #f0cfc5;
+  --academy-border: #b07a80;
+  --field: #3a2124;
+  --field-border: #4a2e31;
+  --on-dark: #d6bdb8;
+  --on-dark-strong: #f0d9d3;
+  --footer-text: #9c807d;
+  --footer-border: #3f2529;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--white);
+  color: var(--ink);
+  font-family: Manrope, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--plum);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--rust);
+}
+
+input,
+textarea,
+button {
+  font-family: inherit;
+}
+
+::placeholder {
+  color: var(--meta);
+}

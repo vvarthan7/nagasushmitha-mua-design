@@ -1,0 +1,101 @@
+.section {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: clamp(40px, 6vw, 72px) clamp(18px, 4vw, 44px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(16px, 2.5vw, 22px);
+  text-align: center;
+  scroll-margin-top: 90px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: Manrope, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--rust);
+}
+
+.quote {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+  font-size: clamp(19px, 2.8vw, 28px);
+  line-height: 1.55;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.attribution {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.name {
+  font-family: Manrope, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--plum);
+}
+
+.meta {
+  font-family: Manrope, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--meta);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.arrow {
+  cursor: pointer;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--plum);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Manrope, sans-serif;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.arrow:hover {
+  background: var(--plum);
+  color: var(--white);
+  border-color: var(--plum);
+}
+
+.dots {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 99px;
+  cursor: pointer;
+  background: var(--dot);
+  transition: all 0.35s ease;
+}
+
+.dotActive {
+  width: 26px;
+  background: var(--plum);
+}

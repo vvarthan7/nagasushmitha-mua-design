@@ -1,0 +1,140 @@
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding: 18px 0;
+  background: var(--white);
+  backdrop-filter: none;
+  border-bottom: 1px solid transparent;
+  box-shadow: none;
+  transition: all 0.4s var(--ease);
+}
+
+.scrolled {
+  padding: 10px 0;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  border-bottom-color: var(--border-soft);
+  box-shadow: 0 6px 26px rgba(125, 54, 70, 0.07);
+}
+
+.inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 clamp(18px, 4vw, 44px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.logo {
+  height: clamp(30px, 5vw, 38px);
+  width: auto;
+  display: block;
+}
+
+.brandName {
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+  font-size: clamp(15px, 2.4vw, 20px);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2.4vw, 26px);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.link {
+  font-family: Manrope, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 6px 0;
+}
+
+.link:hover {
+  color: var(--rust);
+}
+
+.enquire {
+  font-family: Manrope, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--plum);
+  color: var(--white);
+  padding: 12px 22px;
+  border-radius: 999px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.enquire:hover {
+  background: var(--rust);
+  color: var(--white);
+}
+
+.burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--plum);
+  padding: 0 14px;
+  user-select: none;
+}
+
+.burgerLabel {
+  font-family: Manrope, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* Below this width the links collapse into a dropdown under the bar. */
+@media (max-width: 859px) {
+  .links {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 18px clamp(18px, 4vw, 44px) 22px;
+    box-shadow: 0 18px 40px rgba(125, 54, 70, 0.1);
+  }
+
+  .links.open {
+    display: flex;
+  }
+
+  .burger {
+    display: flex;
+  }
+}

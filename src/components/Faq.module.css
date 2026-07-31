@@ -1,0 +1,97 @@
+.section {
+  background: var(--blush);
+}
+
+.inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(36px, 6vw, 66px) clamp(18px, 4vw, 44px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(22px, 4vw, 44px);
+  align-items: start;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: Manrope, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--rust);
+}
+
+.title {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-weight: 400;
+  font-size: clamp(24px, 3.6vw, 34px);
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.title em {
+  color: var(--plum);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  border-bottom: 1px solid var(--border-faq);
+}
+
+.question {
+  width: 100%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  color: var(--ink);
+  transition: color 0.28s ease;
+}
+
+.questionOpen {
+  color: var(--plum);
+}
+
+.questionText {
+  flex: 1;
+  font-family: Manrope, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.icon {
+  font-family: Manrope, sans-serif;
+  font-size: 17px;
+  color: var(--rust);
+  transition: transform 0.3s var(--ease);
+}
+
+.iconOpen {
+  transform: rotate(45deg);
+}
+
+.answer {
+  margin: 0;
+  padding: 0 0 18px;
+  font-family: Manrope, sans-serif;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text);
+  max-width: 52ch;
+  text-wrap: pretty;
+}
