@@ -27,6 +27,7 @@
 .frame {
   background-size: cover;
   background-repeat: no-repeat;
+  background-position: var(--frame-pos);
   opacity: 0;
   will-change: opacity, transform;
 }
@@ -151,6 +152,14 @@
 @media (max-width: 860px) {
   .heroReel {
     height: min(88svh, 700px);
+  }
+
+  /* The banner turns portrait here, so the landscape frames stop overflowing
+     downwards and start overflowing sideways — a different axis to aim, hence a
+     second crop per frame. Frames without a `mobilePosition` get their desktop
+     value back, so this is a no-op for them. */
+  .frame {
+    background-position: var(--frame-pos-mobile);
   }
 
   .kicker {

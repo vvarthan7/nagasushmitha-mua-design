@@ -47,9 +47,13 @@ export default function HeroReel({
           <div
             key={f.src}
             className={`${s.frame} ${SLOTS[i]}`}
+            /* Handed to CSS as custom properties rather than as
+               background-position directly: an inline value would outrank the
+               media query that swaps in the mobile crop. */
             style={{
               backgroundImage: `url(${f.src})`,
-              backgroundPosition: f.position,
+              "--frame-pos": f.position,
+              "--frame-pos-mobile": f.mobilePosition ?? f.position,
             }}
             role="img"
             aria-label={f.alt}

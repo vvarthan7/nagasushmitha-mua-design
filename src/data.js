@@ -95,9 +95,20 @@ export const afterImage = bridal01;
    these, so it crops to a horizontal band and Y decides whether the face is in
    it; on mobile the banner turns portrait and the two landscape frames overflow
    sideways instead, which is what the X values are for. The Ken Burns push then
-   crops a further ~16% either way, so every face sits inside the middle 60%. */
+   crops a further ~16% either way, so every face sits inside the middle 60%.
+   Where one value cannot serve both — a subject far off-centre reads fine in the
+   wide crop but falls off the edge of the narrow one — add an optional
+   `mobilePosition`, which takes over below 860px. */
 export const heroReelFrames = [
-  { src: bridal05, position: "50% 16%", alt: "Reception glam" },
+  {
+    src: bridal05,
+    position: "50% 16%",
+    /* Her face sits ~66% across this frame, so once the banner goes portrait
+       and the crop narrows to ~370 of its 1050 scaled px, 50% leaves her at the
+       very right edge. Desktop is width-driven and unaffected. */
+    mobilePosition: "76% 16%",
+    alt: "Reception glam",
+  },
   {
     src: editorial05,
     position: "62% 64%",
