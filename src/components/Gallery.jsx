@@ -3,17 +3,16 @@ import { gallery, galleryFilters } from "../data.js";
 import Lightbox from "./Lightbox.jsx";
 import s from "./Gallery.module.css";
 
-export default function Gallery({ defaultFilter = "All" }) {
+export default function Gallery({ defaultFilter = "Bridal" }) {
   const [filter, setFilter] = useState(defaultFilter);
   const [zoomed, setZoomed] = useState(null);
 
-  const shots =
-    filter === "All" ? gallery : gallery.filter((g) => g.category === filter);
+  const shots = gallery.filter((g) => g.category === filter);
 
   return (
     <section id="gallery" className={s.section}>
       <div className={s.head}>
-        <h2 className={s.title}>Real brides</h2>
+        <h2 className={s.title}>Brides</h2>
         <div className={s.filters}>
           {galleryFilters.map((name) => (
             <button

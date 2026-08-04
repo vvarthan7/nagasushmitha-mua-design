@@ -3,12 +3,13 @@ import s from "./Hero.module.css";
 
 export default function Hero() {
   return (
-    <section id="top" className={s.hero}>
+    <section className={s.hero}>
       <div className={s.copy}>
         <p className={s.eyebrow}>Bridal makeup artist · Bangalore</p>
-        <h1 className={s.title}>
+        {/* h2, not h1: the banner wordmark above is the page heading now. */}
+        <h2 className={s.title}>
           Your face, <em>your story</em> — told well.
-        </h1>
+        </h2>
         <p className={s.lede}>
           Muhurtham, reception, sangeet and the quiet morning before. Makeup,
           hair and saree draping, all from one calm pair of hands.

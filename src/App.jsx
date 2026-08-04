@@ -12,24 +12,28 @@ import Faq from "./components/Faq.jsx";
 import InstagramFeed from "./components/InstagramFeed.jsx";
 import Enquire from "./components/Enquire.jsx";
 import WhatsAppFab from "./components/WhatsAppFab.jsx";
+import HeroReel from "./components/HeroReel.jsx";
+import AboutSection from "./components/AboutSection.jsx";
 
 export default function App({
   showAcademy = true,
   showInstagram = true,
-  defaultFilter = "All",
+  defaultFilter = "Bridal",
 }) {
   const scrolled = useScrolled(40);
 
   return (
     <>
       <Nav scrolled={scrolled} />
-      <Hero />
+      <HeroReel />
       <Marquee />
-      <BookingSteps />
+      <AboutSection />
+      {/* <Hero /> */}
       <Services />
+      <BookingSteps />
       <Gallery defaultFilter={defaultFilter} />
       <BeforeAfter />
-      {showAcademy && <Academy />}
+      {/* {showAcademy && <Academy />} */}
       <Testimonials />
       <Faq />
       {showInstagram && <InstagramFeed />}

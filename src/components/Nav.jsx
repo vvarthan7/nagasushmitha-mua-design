@@ -2,11 +2,16 @@ import { useEffect, useState } from "react";
 import logo from "../assets/logo.png";
 import s from "./Nav.module.css";
 
+/* An entry with no `href` is listed but not yet live — it renders as a span
+   rather than an anchor, so there is nothing to click, tab to, or middle-click
+   into a new tab. Give Blog its href once the page exists and it becomes a
+   normal link with no other change here. */
 const LINKS = [
   { href: "#bridal", label: "Bridal" },
   { href: "#courses", label: "Courses" },
   { href: "#gallery", label: "Gallery" },
   { href: "#words", label: "Words" },
+  { label: "Blog" },
 ];
 
 export default function Nav({ scrolled }) {
@@ -20,8 +25,12 @@ export default function Nav({ scrolled }) {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // The bar floats over the banner, so it only takes a background once there is
+  // page behind it to hide — or once the mobile dropdown needs one to sit on.
+  const solid = scrolled || menuOpen;
+
   return (
-    <header className={`${s.nav} ${scrolled ? s.scrolled : ""}`}>
+    <header className={`${s.nav} ${solid ? s.solid : ""}`}>
       <div className={s.inner}>
         <a href="#top" className={s.brand}>
           <img src={logo} alt="" className={s.logo} />
@@ -29,11 +38,17 @@ export default function Nav({ scrolled }) {
         </a>
 
         <nav className={`${s.links} ${menuOpen ? s.open : ""}`}>
-          {LINKS.map((l) => (
-            <a key={l.href} href={l.href} className={s.link}>
-              {l.label}
-            </a>
-          ))}
+          {LINKS.map((l) =>
+            l.href ? (
+              <a key={l.label} href={l.href} className={s.link}>
+                {l.label}
+              </a>
+            ) : (
+              <span key={l.label} className={s.linkSoon}>
+                {l.label}
+              </span>
+            ),
+          )}
           <a href="#enquire" className={s.enquire}>
             Enquire
           </a>

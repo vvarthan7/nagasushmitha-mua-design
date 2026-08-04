@@ -1,0 +1,159 @@
+/* Banner 1C — "Reel"
+   Cycle: 24s, four frames, ~1.7s dissolve between each.
+   Full-bleed like the other band sections; it butts straight up under the
+   sticky nav, so no radius and no side padding. */
+
+.heroReel {
+  /* --ink as channels, so the two scrims below can take an alpha. */
+  --reel-ink: 44 26 28;
+
+  position: relative;
+  height: var(--hero-h, 620px);
+  min-height: 520px;
+  overflow: hidden;
+  background: var(--ink);
+  scroll-margin-top: 90px;
+}
+
+.frames,
+.frame,
+.scrim,
+.vignette,
+.body {
+  position: absolute;
+  inset: 0;
+}
+
+.frame {
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+/* All four durations must match or the frames desync. Keyframe percentages
+   stay as they are — see HeroReel.md. */
+.frame1,
+.frame2,
+.frame3,
+.frame4 {
+  animation-duration: 24s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.frame1 { animation-name: hr-burns, hr-x1; }
+.frame2 { animation-name: hr-burns, hr-x2; }
+.frame3 { animation-name: hr-burns, hr-x3; }
+.frame4 { animation-name: hr-burns, hr-x4; }
+
+/* Two scrims: a vertical one for the edges, a centre radial so the
+   wordmark holds contrast across all four frames. Both are needed.
+   The top ramp is steeper than the rest because the transparent nav is drawn
+   over it: it has to carry white 11px links across frame 2, whose top is bright
+   bokeh. It decays to the old 0.34 mid-tone by 38%, so the wordmark band is
+   unchanged. Re-check frame 2 if you flatten it. */
+.scrim {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--reel-ink) / 0.8) 0%,
+    rgb(var(--reel-ink) / 0.5) 14%,
+    rgb(var(--reel-ink) / 0.34) 38%,
+    rgb(var(--reel-ink) / 0.34) 62%,
+    rgb(var(--reel-ink) / 0.6) 100%
+  );
+}
+
+.vignette {
+  background: radial-gradient(
+    ellipse 46% 34% at 50% 50%,
+    rgb(var(--reel-ink) / 0.5) 0%,
+    rgb(var(--reel-ink) / 0) 100%
+  );
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 0 clamp(18px, 4vw, 44px);
+}
+
+.name {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-weight: 400;
+  font-size: clamp(38px, 6vw, 76px);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--white);
+  text-wrap: balance;
+}
+
+.rule {
+  width: 180px;
+  max-width: 60vw;
+  height: 1px;
+  background: rgb(255 255 255 / 0.75);
+  transform-origin: center;
+  animation: hr-hair 1.6s var(--ease) 0.5s both;
+}
+
+.kicker {
+  margin: 0;
+  font-family: Manrope, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.85);
+}
+
+/* --- cross-dissolve: each frame is fully up ~18% of the cycle,
+       with a 7% overlap either side --- */
+@keyframes hr-x1 { 0%, 18% { opacity: 1; } 25%, 93% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes hr-x2 { 0%, 18% { opacity: 0; } 25%, 43% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes hr-x3 { 0%, 43% { opacity: 0; } 50%, 68% { opacity: 1; } 75%, 100% { opacity: 0; } }
+@keyframes hr-x4 { 0%, 68% { opacity: 0; } 75%, 93% { opacity: 1; } 100% { opacity: 0; } }
+
+@keyframes hr-burns {
+  0%   { transform: scale(1.02) translate3d(0, 0, 0); }
+  100% { transform: scale(1.16) translate3d(-2%, -2%, 0); }
+}
+
+@keyframes hr-hair {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Paused off-screen (set by the IntersectionObserver in HeroReel.jsx) */
+.heroReel.paused .frame {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame {
+    animation: none;
+  }
+
+  .frame1 {
+    opacity: 1;
+  }
+
+  .rule {
+    animation: none;
+    transform: scaleX(1);
+  }
+}
+
+@media (max-width: 860px) {
+  .heroReel {
+    height: min(88svh, 700px);
+  }
+
+  .kicker {
+    letter-spacing: 0.24em;
+  }
+}

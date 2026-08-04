@@ -1,11 +1,16 @@
 /* Photos with a fixed role on the page, referenced by name below. */
 import bridal01 from "./assets/gallery/bridal-01.jpg";
+import bridal02 from "./assets/gallery/bridal-02.jpg";
 import bridal03 from "./assets/gallery/bridal-03.jpg";
 import bridal04 from "./assets/gallery/bridal-04.jpg";
+import bridal05 from "./assets/bridal/0K4A3042.webp";
 import reception01 from "./assets/gallery/reception-01.jpg";
 import editorial01 from "./assets/gallery/editorial-01.jpg";
 import editorial02 from "./assets/gallery/editorial-02.jpg";
 import editorial03 from "./assets/gallery/editorial-03.webp";
+import editorial04 from "./assets/editorial/img-3913.webp";
+import editorial05 from "./assets/editorial/editorial-1.webp";
+import nagasushmitha from "./assets/nagasushmitha/nagasushmitha.webp";
 
 /* Gallery categories are folder-driven: drop a file into src/assets/<category>
    and it shows up, ordered by filename.
@@ -61,20 +66,50 @@ export const EMAIL = "hello@nagasushmitha.com";
 
 export const gallery = [
   ...bridalShots.map((src) => ({ src, category: "Bridal" })),
-  { src: reception01, category: "Reception" },
+  /* The one reception photo files under Bridal rather than carrying a filter of
+     its own. It sits in assets/gallery/ rather than the globbed assets/bridal/,
+     so unlike the rest of the group it has to be listed by hand — move the file
+     across if you'd rather the glob picked it up. */
+  { src: reception01, category: "Bridal" },
   ...editorialShots.map((src) => ({ src, category: "Editorial" })),
 ];
 
-export const galleryFilters = ["All", "Bridal", "Editorial", "Reception"];
+/* Every photo carries one of these, so there is no unfiltered view — the grid
+   always has a category selected, Bridal on load. */
+export const galleryFilters = ["Bridal", "Editorial"];
 
 /* The strip is a teaser, so it stays at the eight tiles the layout was built
    for rather than growing with the gallery. */
 export const instagramPosts = gallery.slice(0, 8);
 
 export const heroImage = bridal03;
+export const aboutImage = nagasushmitha;
 export const academyImage = editorial01;
 export const beforeImage = bridal04;
 export const afterImage = bridal01;
+
+/* The banner cross-dissolves these in order over one 24s cycle. Exactly four,
+   or the CSS keyframes desync — see HeroReel.md.
+   `position` is the background-position, and it is per-photo because cover
+   crops to whichever axis overflows. On desktop the banner is wider than any of
+   these, so it crops to a horizontal band and Y decides whether the face is in
+   it; on mobile the banner turns portrait and the two landscape frames overflow
+   sideways instead, which is what the X values are for. The Ken Burns push then
+   crops a further ~16% either way, so every face sits inside the middle 60%. */
+export const heroReelFrames = [
+  { src: bridal05, position: "50% 16%", alt: "Reception glam" },
+  {
+    src: editorial05,
+    position: "62% 64%",
+    alt: "Editorial look, graphic eye and floral hair",
+  },
+  {
+    src: editorial04,
+    position: "46% 48%",
+    alt: "Editorial beauty portrait, smoky eye",
+  },
+  { src: bridal04, position: "50% 0%", alt: "Bridal look, muhurtham" },
+];
 
 export const heroStats = [
   { value: "400+", label: "Brides" },
@@ -117,13 +152,6 @@ export const services = [
     body: "Portfolio shoots, campaigns and film. Looks designed for flash, for continuity across a long shoot day, and for retouch-light delivery.",
     pills: ["On location", "Studio flash", "Continuity"],
     image: editorial03,
-  },
-  {
-    name: "Academy",
-    title: "Academy & masterclasses",
-    body: "Professional makeup, hair styling and saree draping. Taught in small groups in Bangalore with kit guidance and practical assessment.",
-    pills: ["Small groups", "Kit guidance", "Certificate"],
-    image: editorial01,
   },
   {
     name: "Personal",

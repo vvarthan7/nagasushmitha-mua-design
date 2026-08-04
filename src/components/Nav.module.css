@@ -1,16 +1,24 @@
+/* Fixed rather than sticky: the bar is lifted out of flow so the HeroReel
+   banner starts at the top of the document and shows through behind it.
+   While it is transparent everything in it is drawn light, against the
+   banner's top scrim; `.solid` swaps the whole bar back to the light-background
+   palette once the page scrolls, or once the mobile dropdown opens and needs an
+   opaque panel to sit on. */
 .nav {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 30;
   padding: 18px 0;
-  background: var(--white);
+  background: transparent;
   backdrop-filter: none;
   border-bottom: 1px solid transparent;
   box-shadow: none;
   transition: all 0.4s var(--ease);
 }
 
-.scrolled {
+.solid {
   padding: 10px 0;
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(12px);
@@ -35,18 +43,32 @@
   flex-shrink: 0;
 }
 
+/* The mark is a full-colour illustration, so it can't be recoloured to suit the
+   dark banner the way a flat logo could — a soft shadow lifts its darks off the
+   photo instead. */
 .logo {
   height: clamp(30px, 5vw, 38px);
   width: auto;
   display: block;
+  filter: drop-shadow(0 2px 7px rgba(44, 26, 28, 0.6));
+  transition: filter 0.4s var(--ease);
+}
+
+.solid .logo {
+  filter: none;
 }
 
 .brandName {
   font-family: "Playfair Display", serif;
   font-style: italic;
   font-size: clamp(15px, 2.4vw, 20px);
-  color: var(--ink);
+  color: var(--white);
   white-space: nowrap;
+  transition: color 0.4s var(--ease);
+}
+
+.solid .brandName {
+  color: var(--ink);
 }
 
 .links {
@@ -57,27 +79,53 @@
   justify-content: flex-end;
 }
 
-.link {
+.link,
+.linkSoon {
   font-family: Manrope, sans-serif;
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.88);
   padding: 6px 0;
+  transition: color 0.3s ease;
 }
 
 .link:hover {
+  color: var(--white);
+}
+
+/* Listed after the :hover rules above deliberately — same specificity, so
+   source order is what puts the light-background palette back on top. */
+.solid .link,
+.solid .linkSoon {
+  color: var(--text-muted);
+}
+
+.solid .link:hover {
   color: var(--rust);
 }
 
+/* A nav entry with no destination yet (see LINKS in Nav.jsx). It borrows the
+   link type and both palettes off the rules above but deliberately not their
+   :hover — those selectors all name .link, which this never carries, so
+   nothing about it responds to the pointer. The opacity dims it over the
+   banner and the white bar alike, so it reads as listed-but-not-live without
+   needing a colour of its own in either palette. */
+.linkSoon {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Inverted over the banner: a white pill reads as the primary action against
+   the photo, where the plum fill would sink into it. */
 .enquire {
   font-family: Manrope, sans-serif;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  background: var(--plum);
-  color: var(--white);
+  background: var(--white);
+  color: var(--plum);
   padding: 12px 22px;
   border-radius: 999px;
   text-align: center;
@@ -85,6 +133,16 @@
 }
 
 .enquire:hover {
+  background: var(--blush);
+  color: var(--plum);
+}
+
+.solid .enquire {
+  background: var(--plum);
+  color: var(--white);
+}
+
+.solid .enquire:hover {
   background: var(--rust);
   color: var(--white);
 }
@@ -97,11 +155,17 @@
   min-width: 44px;
   min-height: 44px;
   border-radius: 999px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.55);
   background: transparent;
-  color: var(--plum);
+  color: var(--white);
   padding: 0 14px;
   user-select: none;
+  transition: all 0.3s ease;
+}
+
+.solid .burger {
+  border-color: var(--border);
+  color: var(--plum);
 }
 
 .burgerLabel {
@@ -112,7 +176,9 @@
   text-transform: uppercase;
 }
 
-/* Below this width the links collapse into a dropdown under the bar. */
+/* Below this width the links collapse into a dropdown under the bar. Opening it
+   forces `.solid` on in Nav.jsx, so the links inside land on the white panel in
+   their dark palette rather than white-on-white. */
 @media (max-width: 859px) {
   .links {
     display: none;
