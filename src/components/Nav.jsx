@@ -10,7 +10,6 @@ const LINKS = [
   { href: "#about", label: "About" },
   { href: "#services", label: "Services" },
   { href: "#gallery", label: "Gallery" },
-  { href: "#words", label: "Words" },
   { label: "Blog" },
 ];
 
@@ -34,7 +33,7 @@ export default function Nav({ scrolled }) {
       <div className={s.inner}>
         <a href="#top" className={s.brand}>
           <img src={logo} alt="" className={s.logo} />
-          {/* <span className={s.brandName}>Naga Sushmitha</span> */}
+          {/* <span className={s.brandName}>NS Makeup Artistry</span> */}
         </a>
 
         <nav className={`${s.links} ${menuOpen ? s.open : ""}`}>

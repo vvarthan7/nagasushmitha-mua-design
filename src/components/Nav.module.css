@@ -1,7 +1,9 @@
 /* Fixed rather than sticky: the bar is lifted out of flow so the HeroReel
    banner starts at the top of the document and shows through behind it.
-   The bar itself never takes a background over the banner — the wash is on
-   ::before, so it can be taller than the bar and fade out well below it.
+   Nothing is painted here over the banner — no tint, no blur, no border. What
+   separates the bar from the photograph is the banner's own scrim, whose top
+   stop is set for exactly this (see .scrim in HeroReel.module.css); if the type
+   here ever stops reading, that gradient is what to adjust, not this rule.
    `.solid` swaps the whole thing back to the light-background palette once the
    page scrolls, or once the mobile dropdown opens and needs an opaque panel to
    sit on. */
@@ -17,44 +19,6 @@
   border-bottom: 1px solid transparent;
   box-shadow: none;
   transition: all 0.4s var(--ease);
-}
-
-/* The wash that lifts the logo and links off the photo. Three things keep it
-   reading as part of the banner rather than as a bar sitting on top of it:
-
-   1. It is warm dark (--ink), not white. Everything in the bar is white, so a
-      white wash would flatten it — only a dark one buys contrast. At these
-      alphas it reads as a natural top vignette, not as a panel.
-   2. It ends at fully transparent, so there is no seam anywhere — no border,
-      no blur, no edge where the treatment stops.
-   3. It is 132px tall against a ~51px bar, so the fade continues well past the
-      links and dissolves into the photograph instead of stopping with them.
-
-   z-index: -1 rather than positioning .inner above it — .inner must stay
-   static, because the mobile .links dropdown hangs off .nav as its containing
-   block and would reflow to the 1240px inner box instead of the viewport. */
-.nav::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 132px;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgb(44 26 28 / 0.3) 0%,
-    rgb(44 26 28 / 0.16) 42%,
-    rgb(44 26 28 / 0.05) 74%,
-    rgb(44 26 28 / 0) 100%
-  );
-  transition: opacity 0.4s var(--ease);
-}
-
-/* Gone once the bar goes white — the wash would only muddy it. */
-.solid::before {
-  opacity: 0;
 }
 
 .solid {
@@ -84,7 +48,7 @@
 
 /* The mark is a full-colour illustration, so it can't be recoloured to suit the
    dark banner the way a flat logo could — a soft shadow lifts its darks off the
-   photo instead. Eased off once the ::before wash went in behind it. */
+   photo instead. Kept light because the banner's scrim is behind it. */
 .logo {
   height: clamp(26px, 4vw, 32px);
   width: auto;
@@ -125,11 +89,11 @@
   justify-content: flex-end;
 }
 
-/* Works with the ::before wash rather than instead of it: the wash handles the
-   broad separation, so this only needs a tight edge and a small halo. Kept
-   deliberately lighter than it would be on bare photography — stacking a heavy
-   diffuse shadow on top of the wash makes 11px type look smudged. Dropped again
-   under `.solid`, where the type turns dark on white. */
+/* Works with the banner's scrim rather than instead of it: its 0.34 top stop
+   handles the broad separation, so this only needs a tight edge and a small
+   halo. Kept deliberately lighter than it would be on bare photography —
+   stacking a heavy diffuse shadow on top of the scrim makes small type look
+   smudged. Dropped again under `.solid`, where the type turns dark on white. */
 .link,
 .linkSoon {
   font-family: Manrope, sans-serif;

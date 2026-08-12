@@ -14,6 +14,7 @@ import Enquire from "./components/Enquire.jsx";
 import WhatsAppFab from "./components/WhatsAppFab.jsx";
 import HeroReel from "./components/HeroReel.jsx";
 import AboutSection from "./components/AboutSection.jsx";
+import GalleryCoverflow from "./components/GalleryCoverflow.jsx";
 
 export default function App({
   showAcademy = true,
@@ -31,7 +32,7 @@ export default function App({
       {/* <Hero /> */}
       <Services />
       <BookingSteps />
-      <Gallery defaultFilter={defaultFilter} />
+      <GalleryCoverflow defaultCategory={defaultFilter} />
       <BeforeAfter />
       {/* {showAcademy && <Academy />} */}
       <Testimonials />

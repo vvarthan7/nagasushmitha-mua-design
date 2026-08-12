@@ -7,12 +7,12 @@ import s from "./HeroReel.module.css";
  * Four looks cross-dissolving on a 24s cycle over a slow Ken Burns push-in.
  * Centred wordmark, rule wipes in on load. No JS drives the loop — pure CSS.
  *
- * The frames are shown ungraded — no scrim over them — so the wordmark carries
- * its own contrast in CSS (see .name/.kicker) and the nav supplies its own
- * glass band rather than borrowing a dark ramp from here.
+ * One light scrim sits over the frames, carrying both the wordmark here and the
+ * transparent nav drawn on top of the banner — Nav.module.css paints nothing of
+ * its own, so this is the only thing behind those links.
  *
  * Swap to real video later: drop a <video autoPlay muted loop playsInline>
- * in place of the frames block. The wordmark stays as-is.
+ * in place of the frames block. Scrim and wordmark stay as-is.
  */
 
 /* One class per slot in the dissolve cycle, so `heroReelFrames` has to stay
@@ -64,6 +64,10 @@ export default function HeroReel({
           />
         ))}
       </div>
+
+      {/* Above the frames, below the wordmark — source order is what layers
+          these three, none of them carries a z-index. */}
+      <div className={s.scrim} />
 
       <div className={s.body}>
         <h1 className={s.name}>{name}</h1>

@@ -85,12 +85,16 @@ gate it behind a `(min-width: 861px)` check so phones get the poster instead.
 - `prefers-reduced-motion` freezes on frame 1 — already handled.
 - The `IntersectionObserver` pauses the cycle off-screen. Remove it if the
   banner is always above the fold anyway.
-- Contrast: the frames run ungraded — the vertical scrim and centre radial that
-  used to sit over them were dulling the photography and have been removed. The
-  wordmark holds its own contrast through the two-layer `text-shadow` on
-  `.name` / `.kicker`, and the nav carries its own light glass band instead of
-  borrowing the old top ramp. If you re-crop or replace a frame, check the
-  wordmark and the nav links against it — frame 2 is the bright one.
+- Contrast: one light `.scrim` over the frames, much weaker than the original
+  (0.12 through the middle against the old 0.34, which was flattening the
+  photography). The centre radial vignette is gone for good. The wordmark still
+  carries most of its own contrast through the two-layer `text-shadow` on
+  `.name` / `.kicker` — the scrim only assists.
+- The scrim's 0.34 top stop belongs to the **nav**, not to this component. The
+  bar paints no background of its own over the banner, so that stop is the only
+  thing behind its white links and logo. Lowering it makes the nav go soft. If
+  you re-crop or replace a frame, check the wordmark *and* the nav links against
+  it — frame 2 is the bright one.
 
 ## Fonts
 

@@ -4,6 +4,9 @@
    sticky nav, so no radius and no side padding. */
 
 .heroReel {
+  /* --ink as bare channels, so .scrim below can take an alpha. */
+  --reel-ink: 44 26 28;
+
   position: relative;
   /* Fallback tracks the `height` default in HeroReel.jsx — the frame crops in
      data.js are tuned against it, so the two must not drift apart. */
@@ -16,6 +19,7 @@
 
 .frames,
 .frame,
+.scrim,
 .body {
   position: absolute;
   inset: 0;
@@ -53,6 +57,32 @@
 .frame3 { animation-name: hr-burns-3, hr-x3; }
 .frame4 { animation-name: hr-burns-4, hr-x4; }
 
+/* One light scrim over the whole banner, doing two jobs at two different
+   strengths. It replaces the wash that used to sit on the nav, so the nav and
+   the banner are one continuous surface again rather than a band over a photo.
+
+   - The 0.34 top stop is the nav's: it is the only thing behind the white links
+     and the logo now, so it cannot go much below this without them going soft
+     on the brighter frames. It decays fast — most of the way down by 16% — so
+     it costs the photography almost nothing.
+   - The 0.12 through the middle is the wordmark's, and it is deliberately about
+     a third of the 0.34 the original scrim held there. That earlier value was
+     what flattened the frames; at 0.12 the photographs stay bright and the
+     wordmark's own text-shadow still carries most of its contrast.
+
+   Read the pair as a unit before changing either: the top stop is the nav's
+   contrast budget and the middle is the photography's. */
+.scrim {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--reel-ink) / 0.34) 0%,
+    rgb(var(--reel-ink) / 0.16) 16%,
+    rgb(var(--reel-ink) / 0.12) 42%,
+    rgb(var(--reel-ink) / 0.13) 70%,
+    rgb(var(--reel-ink) / 0.24) 100%
+  );
+}
+
 .body {
   display: flex;
   flex-direction: column;
@@ -63,12 +93,12 @@
   padding: 0 clamp(18px, 4vw, 44px);
 }
 
-/* With the scrims gone the wordmark sits straight on the photograph, so the
-   contrast that used to come from a full-frame tint is carried per-element
-   instead: a soft dark bloom close to the glyphs. Two shadows rather than one —
-   a tight one for edge definition, a wide diffuse one to hold the light frames
-   (frame 2 tops out near white). Nothing is dimmed but the pixels behind the
-   type itself. */
+/* The scrim above is only 0.12 behind the wordmark, so most of its contrast is
+   still carried per-element: a soft dark bloom close to the glyphs. Two shadows
+   rather than one — a tight one for edge definition, a wide diffuse one to hold
+   the light frames (frame 2 tops out near white). Keeping the work here rather
+   than in the scrim is what lets the scrim stay light enough not to flatten the
+   photography. */
 .name {
   margin: 0;
   font-family: "Playfair Display", serif;
@@ -96,7 +126,8 @@
 .kicker {
   margin: 0;
   font-family: Manrope, sans-serif;
-  font-size: 10px;
+  font-size: 15px;
+  font-weight: 700;
   letter-spacing: 0.34em;
   text-transform: uppercase;
   color: rgb(255 255 255 / 0.92);
