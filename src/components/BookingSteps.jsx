@@ -6,7 +6,7 @@ export default function BookingSteps() {
   const [active, setActive] = useState(0);
 
   return (
-    <section className={s.section}>
+    <section id="how-it-works" className={s.section}>
       <div className={s.inner}>
         <header className={s.head}>
           <p className={s.eyebrow}>How it works</p>

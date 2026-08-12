@@ -19,7 +19,7 @@
   color: var(--rust);
 }
 
-.quote {
+.testimonial {
   margin: 0;
   font-family: "Playfair Display", serif;
   font-style: italic;
@@ -27,6 +27,10 @@
   line-height: 1.55;
   color: var(--ink);
   text-wrap: pretty;
+}
+
+.strong {
+  font-weight: 700;
 }
 
 .attribution {

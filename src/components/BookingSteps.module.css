@@ -1,5 +1,6 @@
 .section {
   background: var(--blush);
+  scroll-margin-top: 90px;
 }
 
 .inner {

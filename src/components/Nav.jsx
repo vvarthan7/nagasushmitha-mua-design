@@ -7,8 +7,8 @@ import s from "./Nav.module.css";
    into a new tab. Give Blog its href once the page exists and it becomes a
    normal link with no other change here. */
 const LINKS = [
-  { href: "#bridal", label: "Bridal" },
-  { href: "#courses", label: "Courses" },
+  { href: "#about", label: "About" },
+  { href: "#services", label: "Services" },
   { href: "#gallery", label: "Gallery" },
   { href: "#words", label: "Words" },
   { label: "Blog" },
@@ -34,7 +34,7 @@ export default function Nav({ scrolled }) {
       <div className={s.inner}>
         <a href="#top" className={s.brand}>
           <img src={logo} alt="" className={s.logo} />
-          <span className={s.brandName}>Naga Sushmitha</span>
+          {/* <span className={s.brandName}>Naga Sushmitha</span> */}
         </a>
 
         <nav className={`${s.links} ${menuOpen ? s.open : ""}`}>
@@ -44,7 +44,7 @@ export default function Nav({ scrolled }) {
                 {l.label}
               </a>
             ) : (
-              <span key={l.label} className={s.linkSoon}>
+              <span key={l.label} className={s.link}>
                 {l.label}
               </span>
             ),

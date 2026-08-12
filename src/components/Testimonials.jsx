@@ -1,19 +1,34 @@
 import { useState } from "react";
-import { quotes } from "../data.js";
+import { testimonials } from "../data.js";
 import s from "./Testimonials.module.css";
+
+const renderQuote = (text) =>
+  text
+    .split(/\*([^*]+)\*/g)
+    .map((part, i) =>
+      i % 2 ? (
+        <strong key={i} className={s.strong}>
+          {part}
+        </strong>
+      ) : (
+        part
+      ),
+    );
 
 export default function Testimonials() {
   const [index, setIndex] = useState(0);
-  const current = quotes[index];
+  const current = testimonials[index];
 
   const step = (delta) =>
-    setIndex((i) => (i + delta + quotes.length) % quotes.length);
+    setIndex((i) => (i + delta + testimonials.length) % testimonials.length);
 
   return (
     <section id="words" className={s.section}>
       <p className={s.eyebrow}>Kind words</p>
 
-      <blockquote className={s.quote}>“{current.quote}”</blockquote>
+      <blockquote className={s.testimonial}>
+        “{renderQuote(current.testimonial)}”
+      </blockquote>
       <div className={s.attribution}>
         <div className={s.name}>{current.name}</div>
         <div className={s.meta}>{current.meta}</div>
@@ -30,9 +45,9 @@ export default function Testimonials() {
         </button>
 
         <div className={s.dots}>
-          {quotes.map((quote, i) => (
+          {testimonials.map((testimonial, i) => (
             <button
-              key={quote.name}
+              key={testimonial.name}
               type="button"
               aria-label={`Testimonial ${i + 1}`}
               aria-current={index === i}

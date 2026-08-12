@@ -7,8 +7,12 @@ import s from "./HeroReel.module.css";
  * Four looks cross-dissolving on a 24s cycle over a slow Ken Burns push-in.
  * Centred wordmark, rule wipes in on load. No JS drives the loop — pure CSS.
  *
+ * The frames are shown ungraded — no scrim over them — so the wordmark carries
+ * its own contrast in CSS (see .name/.kicker) and the nav supplies its own
+ * glass band rather than borrowing a dark ramp from here.
+ *
  * Swap to real video later: drop a <video autoPlay muted loop playsInline>
- * in place of the frames block. Scrims and wordmark stay as-is.
+ * in place of the frames block. The wordmark stays as-is.
  */
 
 /* One class per slot in the dissolve cycle, so `heroReelFrames` has to stay
@@ -17,8 +21,8 @@ const SLOTS = [s.frame1, s.frame2, s.frame3, s.frame4];
 
 export default function HeroReel({
   name = "Naga Sushmitha",
-  kicker = "Bridal Makeup Artist",
-  height = 620,
+  kicker = "Makeup - Artist",
+  height = 700,
 }) {
   const ref = useRef(null);
   const [inView, setInView] = useState(true);
@@ -60,9 +64,6 @@ export default function HeroReel({
           />
         ))}
       </div>
-
-      <div className={s.scrim} />
-      <div className={s.vignette} />
 
       <div className={s.body}>
         <h1 className={s.name}>{name}</h1>

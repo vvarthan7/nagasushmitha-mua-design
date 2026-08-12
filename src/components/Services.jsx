@@ -7,7 +7,7 @@ export default function Services() {
   const service = services[active];
 
   return (
-    <section id="bridal" className={s.section}>
+    <section id="services" className={s.section}>
       <h2 className={s.title}>What we do</h2>
 
       <div className={s.tabs} role="tablist">

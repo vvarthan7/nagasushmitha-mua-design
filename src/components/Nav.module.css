@@ -1,16 +1,17 @@
 /* Fixed rather than sticky: the bar is lifted out of flow so the HeroReel
    banner starts at the top of the document and shows through behind it.
-   While it is transparent everything in it is drawn light, against the
-   banner's top scrim; `.solid` swaps the whole bar back to the light-background
-   palette once the page scrolls, or once the mobile dropdown opens and needs an
-   opaque panel to sit on. */
+   The bar itself never takes a background over the banner — the wash is on
+   ::before, so it can be taller than the bar and fade out well below it.
+   `.solid` swaps the whole thing back to the light-background palette once the
+   page scrolls, or once the mobile dropdown opens and needs an opaque panel to
+   sit on. */
 .nav {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 30;
-  padding: 18px 0;
+  padding: 12px 0;
   background: transparent;
   backdrop-filter: none;
   border-bottom: 1px solid transparent;
@@ -18,8 +19,46 @@
   transition: all 0.4s var(--ease);
 }
 
+/* The wash that lifts the logo and links off the photo. Three things keep it
+   reading as part of the banner rather than as a bar sitting on top of it:
+
+   1. It is warm dark (--ink), not white. Everything in the bar is white, so a
+      white wash would flatten it — only a dark one buys contrast. At these
+      alphas it reads as a natural top vignette, not as a panel.
+   2. It ends at fully transparent, so there is no seam anywhere — no border,
+      no blur, no edge where the treatment stops.
+   3. It is 132px tall against a ~51px bar, so the fade continues well past the
+      links and dissolves into the photograph instead of stopping with them.
+
+   z-index: -1 rather than positioning .inner above it — .inner must stay
+   static, because the mobile .links dropdown hangs off .nav as its containing
+   block and would reflow to the 1240px inner box instead of the viewport. */
+.nav::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 132px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgb(44 26 28 / 0.3) 0%,
+    rgb(44 26 28 / 0.16) 42%,
+    rgb(44 26 28 / 0.05) 74%,
+    rgb(44 26 28 / 0) 100%
+  );
+  transition: opacity 0.4s var(--ease);
+}
+
+/* Gone once the bar goes white — the wash would only muddy it. */
+.solid::before {
+  opacity: 0;
+}
+
 .solid {
-  padding: 10px 0;
+  padding: 6px 0;
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(12px);
   border-bottom-color: var(--border-soft);
@@ -45,12 +84,12 @@
 
 /* The mark is a full-colour illustration, so it can't be recoloured to suit the
    dark banner the way a flat logo could — a soft shadow lifts its darks off the
-   photo instead. */
+   photo instead. Eased off once the ::before wash went in behind it. */
 .logo {
-  height: clamp(30px, 5vw, 38px);
+  height: clamp(26px, 4vw, 32px);
   width: auto;
   display: block;
-  filter: drop-shadow(0 2px 7px rgba(44, 26, 28, 0.6));
+  filter: drop-shadow(0 2px 6px rgba(44, 26, 28, 0.45));
   transition: filter 0.4s var(--ease);
 }
 
@@ -64,34 +103,72 @@
   font-size: clamp(15px, 2.4vw, 20px);
   color: var(--white);
   white-space: nowrap;
+  text-shadow:
+    0 1px 2px rgba(44, 26, 28, 0.45),
+    0 2px 12px rgba(44, 26, 28, 0.3);
   transition: color 0.4s var(--ease);
 }
 
 .solid .brandName {
   color: var(--ink);
+  text-shadow: none;
 }
 
+/* The gap is small because the links now carry 13px of their own side padding
+   for the hover pill to sit in — gap + padding is what reads as the spacing, so
+   the old 26px here would have pushed the row ~26px wider. */
 .links {
   display: flex;
   align-items: center;
-  gap: clamp(14px, 2.4vw, 26px);
+  gap: clamp(2px, 0.8vw, 7px);
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
+/* Works with the ::before wash rather than instead of it: the wash handles the
+   broad separation, so this only needs a tight edge and a small halo. Kept
+   deliberately lighter than it would be on bare photography — stacking a heavy
+   diffuse shadow on top of the wash makes 11px type look smudged. Dropped again
+   under `.solid`, where the type turns dark on white. */
 .link,
 .linkSoon {
   font-family: Manrope, sans-serif;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.88);
-  padding: 6px 0;
-  transition: color 0.3s ease;
+  color: var(--white);
+  padding: 7px 13px;
+  border-radius: 999px;
+  /* The row is allowed to wrap, and these are shrinkable flex items — without
+     this a multi-word label breaks inside its own pill and makes that one entry
+     two lines tall. It has to give at the gaps, not mid-label. */
+  white-space: nowrap;
+  text-shadow:
+    0 1px 2px rgba(44, 26, 28, 0.45),
+    0 2px 10px rgba(44, 26, 28, 0.28);
+  transition:
+    color 0.25s ease,
+    background-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
+/* Hover pill. Over the banner the type is already white, so colour can't carry
+   the state — the background has to. It is white glass rather than a brand
+   colour: plum or rust would go muddy against whatever photo happens to be
+   under it, white reads the same on all four frames. The 1px ring is an inset
+   box-shadow, not a border, so nothing reflows on hover. */
 .link:hover {
   color: var(--white);
+  background: rgb(255 255 255 / 0.18);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.24);
+}
+
+/* Keyboard users get a ring instead of the pill — a filled background alone is
+   too easy to lose track of when tabbing. */
+.link:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 0.9);
+  outline-offset: 2px;
 }
 
 /* Listed after the :hover rules above deliberately — same specificity, so
@@ -99,10 +176,20 @@
 .solid .link,
 .solid .linkSoon {
   color: var(--text-muted);
+  text-shadow: none;
 }
 
+/* On the white bar the pill flips to the blush tint used elsewhere in the
+   palette, and the text can take rust — there is a fixed background behind it
+   now, so colour works as a state again. */
 .solid .link:hover {
   color: var(--rust);
+  background: var(--blush-soft);
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+}
+
+.solid .link:focus-visible {
+  outline-color: var(--plum);
 }
 
 /* A nav entry with no destination yet (see LINKS in Nav.jsx). It borrows the
@@ -117,7 +204,9 @@
 }
 
 /* Inverted over the banner: a white pill reads as the primary action against
-   the photo, where the plum fill would sink into it. */
+   the photo, where the plum fill would sink into it. Its height sets the height
+   of the whole bar — it is the tallest thing in the row — so trim this before
+   reaching for the .nav padding. */
 .enquire {
   font-family: Manrope, sans-serif;
   font-size: 11px;
@@ -126,9 +215,12 @@
   text-transform: uppercase;
   background: var(--white);
   color: var(--plum);
-  padding: 12px 22px;
+  padding: 9px 19px;
   border-radius: 999px;
   text-align: center;
+  /* The row gap is now tuned for the links' hover pills, which is too tight for
+     the CTA — this buys back its separation without widening the whole row. */
+  margin-left: clamp(6px, 1.2vw, 14px);
   transition: all 0.3s ease;
 }
 
@@ -160,12 +252,16 @@
   color: var(--white);
   padding: 0 14px;
   user-select: none;
+  text-shadow:
+    0 1px 2px rgba(44, 26, 28, 0.45),
+    0 2px 10px rgba(44, 26, 28, 0.28);
   transition: all 0.3s ease;
 }
 
 .solid .burger {
   border-color: var(--border);
   color: var(--plum);
+  text-shadow: none;
 }
 
 .burgerLabel {
@@ -198,6 +294,23 @@
 
   .links.open {
     display: flex;
+  }
+
+  /* Stretched to full-width rows here, so the hover/tap highlight reads as a
+     menu row rather than a pill. The negative margin pulls the row out into the
+     panel's own padding while the matching padding puts the text back exactly
+     where it sat before — the highlight widens, the type does not move. */
+  .link,
+  .linkSoon {
+    padding: 11px 14px;
+    margin: 0 -14px;
+    border-radius: 10px;
+  }
+
+  /* Cancels the desktop CTA spacing, which would indent the pill in a column. */
+  .enquire {
+    margin-left: 0;
+    margin-top: 10px;
   }
 
   .burger {

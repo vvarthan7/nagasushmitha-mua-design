@@ -30,7 +30,7 @@ export default function AboutSection({
   ctaHref = "#gallery",
 }) {
   return (
-    <section className={s.section} aria-labelledby="about-heading">
+    <section id="about" className={s.section} aria-labelledby="about-heading">
       <div className={s.inner}>
         <figure className={s.figure}>
           <span className={s.frame} aria-hidden="true" />
