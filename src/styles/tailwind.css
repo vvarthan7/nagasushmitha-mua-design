@@ -1,0 +1,345 @@
+@import "tailwindcss";
+
+/* The project has no .git, so Tailwind's automatic source detection has no root
+   to anchor to — point it at src/ explicitly. */
+@source "../";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Design tokens
+   The palette, type and easings that used to live in :root in global.css.
+   Declaring them here rather than in a plain :root block is what turns each
+   one into a utility — --color-plum gives bg-plum / text-plum / border-plum,
+   --ease-brand gives ease-brand, --animate-marquee gives animate-marquee.
+   Values are unchanged from global.css; only the names carry the namespace
+   prefix Tailwind reads.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@theme {
+  /* ── Light palette ─────────────────────────────────────────────────── */
+  --color-white: #ffffff;
+  --color-ink: #2c1a1c;
+  --color-plum: #7d3646;
+  --color-rust: #b0543f;
+  --color-clay: #d99a86;
+  --color-blush: #f5e2d9;
+  --color-blush-soft: #fbeee8;
+  --color-border: #e6bfb2;
+  --color-border-soft: #f0dcd4;
+  --color-border-faq: #eacfc4;
+  --color-text: #6b4a48;
+  --color-text-muted: #7a5a56;
+  --color-meta: #a98a83;
+  --color-dot: #e0b1a4;
+
+  /* ── Dark sections (academy, enquire, footer) ──────────────────────── */
+  --color-academy-text: #f0cfc5;
+  --color-academy-border: #b07a80;
+  --color-field: #3a2124;
+  --color-field-border: #4a2e31;
+  --color-on-dark: #d6bdb8;
+  --color-on-dark-strong: #f0d9d3;
+  --color-footer-text: #9c807d;
+  --color-footer-border: #3f2529;
+
+  /* ── Layout ────────────────────────────────────────────────────────────
+     Three numbers the stylesheets repeated in nine, twelve and eight places
+     respectively. They were magic numbers there and they are tokens here.
+
+     - shell is the page's content width, the max-width every band shares.
+     - gutter is the side inset those bands hold against the viewport.
+     - nav-offset is the fixed bar's clearance, used as scroll-margin so an
+       in-page anchor does not land underneath it. */
+  --container-shell: 1240px;
+  --spacing-gutter: clamp(18px, 4vw, 44px);
+  --spacing-nav-offset: 90px;
+
+  /* ── Type ──────────────────────────────────────────────────────────────
+     font-sans matches what body carried in global.css; font-serif is the
+     display face. Components wrote `Manrope, sans-serif` and
+     `"Playfair Display", serif` directly, which differ from these only in the
+     fallback tail — i.e. only if the webfont fails to load. */
+  --font-sans: Manrope, system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+
+  /* ── Motion ────────────────────────────────────────────────────────────
+     ease-brand is the old --ease. ease-soft is the CSS `ease` keyword, which
+     the components leaned on constantly and which is NOT the same curve as
+     Tailwind's own ease-in-out — hence its own token rather than a swap. */
+  --ease-brand: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --ease-soft: ease;
+
+  /* ── Animations ────────────────────────────────────────────────────────
+     Keyframes themselves are below, outside @theme, so they are always
+     emitted. Each entry here becomes an animate-* utility. */
+  --animate-marquee: marq 30s linear infinite;
+  --animate-about-burns: about-burns 26s ease-in-out infinite alternate;
+
+  /* One push per reel frame, paired with that frame's dissolve. Two timing
+     functions, one per animation in the list: the push must stay `linear`
+     (see the note on hr-burns-1) and the dissolve stays ease-in-out. All four
+     durations must match or the frames desync. */
+  --animate-reel-1: hr-burns-1 24s linear infinite,
+    hr-x1 24s ease-in-out infinite;
+  --animate-reel-2: hr-burns-2 24s linear infinite,
+    hr-x2 24s ease-in-out infinite;
+  --animate-reel-3: hr-burns-3 24s linear infinite,
+    hr-x3 24s ease-in-out infinite;
+  --animate-reel-4: hr-burns-4 24s linear infinite,
+    hr-x4 24s ease-in-out infinite;
+  --animate-hairline: hr-hair 1.6s var(--ease-brand) 0.5s both;
+
+  /* Gallery set swap. The fade-only pair is what reduced motion falls back
+     to — the cross-dissolve stays, it is the travel that goes, so the stage
+     still never blanks. */
+  --animate-layer-in: layerIn 0.46s var(--ease-brand) both;
+  --animate-layer-out: layerOut 0.46s var(--ease-brand) both;
+  --animate-layer-fade-in: layerFadeIn 0.46s var(--ease-brand) both;
+  --animate-layer-fade-out: layerFadeOut 0.46s var(--ease-brand) both;
+
+  /* Gallery viewer overlay */
+  --animate-scrim-in: scrimIn 0.28s ease both;
+  --animate-panel-in: panelIn 0.4s var(--ease-brand) both;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Custom variants
+   Every breakpoint in this design is a max-width one, and none of them lines up
+   with a Tailwind default. They are declared here rather than written inline as
+   `max-[900px]:` for two reasons:
+
+   1. Exactness. `max-[900px]:` compiles to `@media (width < 900px)`, which
+      excludes a viewport of exactly 900px — the old `max-width: 900px` included
+      it. Same one-pixel shift at 859 and 860, and Nav's dropdown boundary sits
+      exactly there.
+   2. Order. Tailwind emits custom variants in declaration order, so declaring
+      them widest-first reproduces the cascade the stylesheets had. The one
+      sequence that actually matters is 900 → 820h → 620h: all three set the
+      gallery viewer's stage height and the narrowest has to land last.
+
+   Names carry the pixel value on purpose — responsive behaviour here is judged
+   by eye against real widths, and a semantic name would hide the number.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@custom-variant upto-980 (@media (max-width: 980px));
+@custom-variant upto-900 (@media (max-width: 900px));
+@custom-variant upto-860 (@media (max-width: 860px));
+@custom-variant upto-859 (@media (max-width: 859px));
+@custom-variant upto-560 (@media (max-width: 560px));
+@custom-variant short (@media (max-height: 820px));
+@custom-variant shorter (@media (max-height: 620px));
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Base
+   What body / a / ::placeholder carried in global.css. Preflight already
+   handles the margin reset and box-sizing, so only these are left. Utilities
+   outrank this layer, which is what lets a component pin its own link colour
+   with a plain hover:text-* instead of the specificity games the modules
+   needed.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer base {
+  body {
+    background: var(--color-white);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  a {
+    color: var(--color-plum);
+    text-decoration: none;
+  }
+
+  /* Gated on a real pointer to match Tailwind's own `hover:` variant, which
+     compiles into exactly this query. Without the gate the two disagree on
+     touch: this rule would fire on tap while the utilities that exist to pin a
+     link's colour against it (Services' "Enquire about this", the WhatsApp FAB,
+     the WhatsApp button in the form) would not, and those links would recolour
+     to rust — the one thing the pins are there to prevent. */
+  @media (hover: hover) {
+    a:hover {
+      color: var(--color-rust);
+    }
+  }
+
+  ::placeholder {
+    color: var(--color-meta);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Utilities
+   One entry, for one value that is genuinely a composite rather than a
+   spacing or colour choice.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* The reel banner's scrim: one light gradient doing two jobs at two different
+   strengths. Kept as a named utility because the two numbers that matter are
+   buried in the middle of five stops and both need explaining.
+
+   - The 0.34 top stop is the NAV's. The bar paints no background of its own
+     over the banner, so this is the only thing behind its white links and the
+     logo; it cannot go much below this without them going soft on the brighter
+     frames. It decays fast — most of the way down by 16% — so it costs the
+     photography almost nothing.
+   - The 0.12 through the middle is the wordmark's, and it is deliberately
+     about a third of the 0.34 the original scrim held there. That earlier
+     value was what flattened the frames; at 0.12 the photographs stay bright
+     and the wordmark's own text-shadow carries most of its contrast.
+
+   Read the pair as a unit before changing either: the top stop is the nav's
+   contrast budget and the middle is the photography's. The channels are --ink
+   written out, so the stops can take an alpha. */
+@utility hero-scrim {
+  background: linear-gradient(
+    180deg,
+    rgb(44 26 28 / 0.34) 0%,
+    rgb(44 26 28 / 0.16) 16%,
+    rgb(44 26 28 / 0.12) 42%,
+    rgb(44 26 28 / 0.13) 70%,
+    rgb(44 26 28 / 0.24) 100%
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Keyframes
+   Declared at the top level rather than inside @theme so they are emitted
+   unconditionally — several are referenced from animate-* utilities that only
+   appear behind a variant.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Marquee ───────────────────────────────────────────────────────────── */
+@keyframes marq {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ── About portrait ────────────────────────────────────────────────────── */
+@keyframes about-burns {
+  from { transform: scale(1.01); }
+  to   { transform: scale(1.09); }
+}
+
+/* ── Reel: cross-dissolve ──────────────────────────────────────────────────
+   Each frame is fully up ~18% of the cycle, with a 7% overlap either side. */
+@keyframes hr-x1 { 0%, 18% { opacity: 1; } 25%, 93% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes hr-x2 { 0%, 18% { opacity: 0; } 25%, 43% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes hr-x3 { 0%, 43% { opacity: 0; } 50%, 68% { opacity: 1; } 75%, 100% { opacity: 0; } }
+@keyframes hr-x4 { 0%, 68% { opacity: 0; } 75%, 93% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ── Reel: Ken Burns push, one set per frame ───────────────────────────────
+   This used to be a single `hr-burns` shared by all four, running scale(1.02)
+   → scale(1.16) once across the whole 24s. That is what caused the jump at the
+   end of the loop: the transform is not the same at 100% as at 0%, and frame 1
+   is fully opaque at both (hr-x1 above), so on every wrap it snapped from
+   scale(1.16) back to scale(1.02) in full view. A shared ramp cannot avoid
+   this — some frame is always visible at the wrap, so the shared transform has
+   to be loop-continuous, which rules out a one-way push.
+
+   Each frame now pushes only across its own visible window and eases back
+   while its opacity is 0, so the reset is never on screen:
+
+     frame 1   93% → 25% (wraps)      frame 3   43% → 75%
+     frame 2   18% → 50%              frame 4   68% → 100%
+
+   Frame 1 is the awkward one, because its window straddles the loop boundary.
+   Its keyframes are written so 0% and 100% hold the same value — scale(1.0431),
+   the point its push has reached 7 of its 32 units by the wrap — which lets it
+   carry straight through the restart with no step and, under `linear`, no
+   change in speed either. Recompute that value if the window or the range
+   moves.
+
+   Frame 4 is the one exception: its window ends exactly at 100%, so there is no
+   invisible stretch left to ease back in and it does snap. That is fine — hr-x4
+   puts it at opacity 0 at exactly that instant.
+
+   Range is scale(1.03) → scale(1.09). Lower than the old 1.16 on purpose: the
+   push now covers a third of the cycle instead of all of it, so the same 14%
+   would have run about three times faster than before. The translate is capped
+   well inside the overhang the scale creates, or the edges would show. */
+@keyframes hr-burns-1 {
+  0%,
+  100% { transform: scale(1.0431) translate3d(-0.33%, -0.33%, 0); }
+  25%  { transform: scale(1.09) translate3d(-1.5%, -1.5%, 0); }
+  93%  { transform: scale(1.03) translate3d(0, 0, 0); }
+}
+
+@keyframes hr-burns-2 {
+  0%,
+  18%  { transform: scale(1.03) translate3d(0, 0, 0); }
+  50%  { transform: scale(1.09) translate3d(-1.5%, -1.5%, 0); }
+  100% { transform: scale(1.03) translate3d(0, 0, 0); }
+}
+
+@keyframes hr-burns-3 {
+  0%,
+  43%  { transform: scale(1.03) translate3d(0, 0, 0); }
+  75%  { transform: scale(1.09) translate3d(-1.5%, -1.5%, 0); }
+  100% { transform: scale(1.03) translate3d(0, 0, 0); }
+}
+
+@keyframes hr-burns-4 {
+  0%,
+  68%  { transform: scale(1.03) translate3d(0, 0, 0); }
+  100% { transform: scale(1.09) translate3d(-1.5%, -1.5%, 0); }
+}
+
+/* ── Reel: hairline rule wipe ──────────────────────────────────────────── */
+@keyframes hr-hair {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ── Gallery: set swap ────────────────────────────────────────────────────
+   --dir is set on each layer: +1 when the incoming set sits right of the
+   outgoing one in the button row, -1 when it sits left. */
+@keyframes layerIn {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--dir) * 56px)) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes layerOut {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--dir) * -56px)) scale(0.96);
+  }
+}
+
+@keyframes layerFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes layerFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ── Gallery viewer overlay ────────────────────────────────────────────── */
+@keyframes scrimIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

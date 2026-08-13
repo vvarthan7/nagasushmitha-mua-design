@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    /* Vite does the transpiling. `tsc` is only ever run as a type checker,
+       which is why nothing here emits. */
+    "noEmit": true,
+
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+
+    /* The automatic runtime, matching @vitejs/plugin-react — components do not
+       import React just to write JSX. */
+    "jsx": "react-jsx",
+
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "forceConsistentCasingInFileNames": true
+
+    /* `noUnusedLocals` / `noUnusedParameters` are deliberately left off. Hero,
+       Academy and the `showAcademy` flag are parked behind commented-out JSX in
+       App.tsx; those flags would turn parked work into build errors. */
+  },
+  "include": ["src", "vite.config.ts"]
+}
