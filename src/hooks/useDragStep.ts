@@ -3,7 +3,7 @@ import type { RefObject } from "react";
 
 /** Drag or swipe a carousel: one step per `threshold` px of travel, then
  *  re-arm, so a long drag keeps moving the ring rather than stopping at one.
- *  Shared by the coverflow on the page and the one in the viewer.
+ *  Shared by GalleryStrip's ring and the one inside its viewer.
  *
  *  `step` is handed +1 or -1 — the sign is the direction of travel, matching
  *  the signed steps the arrows and the ring itself pass around.

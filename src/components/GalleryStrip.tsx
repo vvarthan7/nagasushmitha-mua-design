@@ -7,7 +7,7 @@ import { useDragStep } from "../hooks/useDragStep";
 import { pill } from "../styles/ui";
 
 /**
- * Gallery — pills + coverflow.
+ * GalleryStrip — pills + coverflow.
  * Hero frame at centre, neighbours shrunk and dimmed, everything sliding
  * through the middle. Arrows, clicking a side frame, dragging, and ← / → all
  * move the ring; the category buttons swap the ring for a different set;
@@ -184,7 +184,7 @@ interface LeavingSet {
   index: number;
 }
 
-interface GalleryCoverflowProps {
+interface GalleryStripProps {
   categories?: readonly GalleryCategory[];
   defaultCategory?: GalleryCategory;
   eyebrow?: string;
@@ -195,7 +195,7 @@ interface GalleryCoverflowProps {
   ctaHref?: string;
 }
 
-export default function GalleryCoverflow({
+export default function GalleryStrip({
   categories = galleryFilters,
   defaultCategory = galleryFilters[0],
   eyebrow = "Gallery",
@@ -204,7 +204,7 @@ export default function GalleryCoverflow({
   lead = "Bridal chairs, art shoots, prosthetics — the range, as it was shot.",
   ctaLabel = "View more",
   ctaHref = "#",
-}: GalleryCoverflowProps) {
+}: GalleryStripProps) {
   const [category, setCategory] = useState<GalleryCategory>(defaultCategory);
   /* `index` grows unbounded — direction of travel is the sign of the step, so
      going from the last photo to the first still slides forward. */

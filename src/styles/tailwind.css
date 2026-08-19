@@ -40,6 +40,17 @@
   --color-footer-text: #9c807d;
   --color-footer-border: #3f2529;
 
+  /* ── Elevation ─────────────────────────────────────────────────────────
+     The portfolio grid's two tile states. Tinted with --plum's channels rather
+     than neutral black on purpose: a grey shadow over the blush background
+     reads as dirt, the same shadow warmed reads as depth. Every other shadow
+     in the project is written inline because it is used once; these are
+     tokens because the pair has to stay a pair — `lift` is `tile` at roughly
+     double the offset and blur, and that ratio is what the hover reads as.
+     Change one and the other needs the same move. */
+  --shadow-tile: 0 6px 20px rgb(125 54 70 / 0.08);
+  --shadow-lift: 0 16px 40px rgb(125 54 70 / 0.16);
+
   /* ── Layout ────────────────────────────────────────────────────────────
      Three numbers the stylesheets repeated in nine, twelve and eight places
      respectively. They were magic numbers there and they are tokens here.

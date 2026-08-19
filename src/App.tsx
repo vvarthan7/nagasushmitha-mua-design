@@ -4,7 +4,6 @@ import Hero from "./components/Hero";
 import Marquee from "./components/Marquee";
 import BookingSteps from "./components/BookingSteps";
 import Services from "./components/Services";
-import Gallery from "./components/Gallery";
 import BeforeAfter from "./components/BeforeAfter";
 import Academy from "./components/Academy";
 import Testimonials from "./components/Testimonials";
@@ -14,7 +13,7 @@ import Enquire from "./components/Enquire";
 import WhatsAppFab from "./components/WhatsAppFab";
 import HeroReel from "./components/HeroReel";
 import AboutSection from "./components/AboutSection";
-import GalleryCoverflow from "./components/GalleryCoverflow";
+import GalleryStrip from "./components/GalleryStrip";
 import type { GalleryCategory } from "./types";
 
 interface AppProps {
@@ -40,7 +39,7 @@ export default function App({
       {/* <Hero /> */}
       <Services />
       <BookingSteps />
-      <GalleryCoverflow defaultCategory={defaultFilter} />
+      <GalleryStrip defaultCategory={defaultFilter} />
       <BeforeAfter />
       {/* {showAcademy && <Academy />} */}
       <Testimonials />

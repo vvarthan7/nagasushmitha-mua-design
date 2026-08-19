@@ -11,9 +11,11 @@ import reception01 from "./assets/gallery/reception-01.jpg";
 import editorial01 from "./assets/gallery/editorial-01.jpg";
 import editorial02 from "./assets/gallery/editorial-02.jpg";
 import editorial03 from "./assets/gallery/editorial-03.webp";
-import editorial04 from "./assets/editorial/img-3913.webp";
-import editorial05 from "./assets/editorial/editorial-1.webp";
 import nagasushmitha from "./assets/nagasushmitha/nagasushmitha.webp";
+/* The portfolio grid's photos are not imported here. They go through `photo()`
+   below, which resolves a path to both the image and its blur placeholder at
+   once — see the note there for why the two cannot be named separately. */
+import { blurs, type BlurKey } from "./data.blur";
 import type {
   BookingStep,
   FaqItem,
@@ -23,6 +25,9 @@ import type {
   HeroStat,
   Service,
   Testimonial,
+  Work,
+  WorkCategory,
+  WorkFilter,
 } from "./types";
 
 /* Gallery categories are folder-driven: drop a file into src/assets/<category>
@@ -69,20 +74,52 @@ function pickShots(modules: Record<string, ImageModule>): string[] {
 }
 
 /* Both letter cases are listed because glob matching is case-sensitive and
-   phone cameras write .JPG. */
-const bridalShots = pickShots(
-  import.meta.glob<ImageModule>(
-    "./assets/bridal/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}",
-    { eager: true },
-  ),
+   phone cameras write .JPG. The pattern is repeated rather than hoisted into a
+   constant because import.meta.glob is compiled away at build time and only
+   accepts a literal. */
+const bridalModules = import.meta.glob<ImageModule>(
+  "./assets/bridal/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}",
+  { eager: true },
 );
 
-const editorialShots = pickShots(
-  import.meta.glob<ImageModule>(
-    "./assets/editorial/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}",
-    { eager: true },
-  ),
+const editorialModules = import.meta.glob<ImageModule>(
+  "./assets/editorial/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}",
+  { eager: true },
 );
+
+const bridalShots = pickShots(bridalModules);
+const editorialShots = pickShots(editorialModules);
+
+/* The photos `photo()` can resolve, by path. These are the two folders the
+   placeholder generator covers, and the two have to stay in step — see the
+   FOLDERS note in scripts/generate-blur.mjs. */
+const modulesByPath: Record<string, ImageModule> = {
+  ...bridalModules,
+  ...editorialModules,
+};
+
+/** Resolves one photo to the two things a portfolio tile needs: the hashed URL
+ *  Vite emits, and its blur-up placeholder.
+ *
+ *  The point of going through a path rather than an import is that both come
+ *  from the same key, so they cannot disagree. Pairing them by hand — a `src:`
+ *  naming one import and a `blur:` naming a path — would let an entry point at
+ *  one photo and preview another, and nothing would catch it: both halves are
+ *  valid, they are just about different pictures.
+ *
+ *  BlurKey is a union of the paths data.blur.ts actually generated, so a
+ *  renamed or deleted photo fails to compile here rather than at runtime. The
+ *  throw is for the other direction — a photo that exists but has no
+ *  placeholder yet, i.e. `npm run blur` has not been run since it was added. */
+function photo(key: BlurKey): Pick<Work, "src" | "blur"> {
+  const module = modulesByPath[`./assets/${key}`];
+  if (!module) {
+    throw new Error(
+      `No image at src/assets/${key}. Its placeholder exists, so the file was renamed or removed after the last \`npm run blur\`.`,
+    );
+  }
+  return { src: module.default, blur: blurs[key] };
+}
 
 export const WHATSAPP_URL = "https://wa.me/910000000000";
 export const INSTAGRAM_URL =
@@ -102,7 +139,10 @@ export const gallery: GalleryShot[] = [
 
 /* Every photo carries one of these, so there is no unfiltered view — the grid
    always has a category selected, Bridal on load. */
-export const galleryFilters: readonly GalleryCategory[] = ["Bridal", "Editorial"];
+export const galleryFilters: readonly GalleryCategory[] = [
+  "Bridal",
+  "Editorial",
+];
 
 /* The strip is a teaser, so it stays at the eight tiles the layout was built
    for rather than growing with the gallery. */
@@ -290,4 +330,251 @@ export const testimonials: Testimonial[] = [
     name: "Sri Raksha",
     meta: "Bride",
   },
+];
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Portfolio grid — the gallery page's set, rendered by Portfolio.
+
+   Separate from `gallery` above, and deliberately so. That one is folder-driven
+   (drop a file into src/assets/<category> and it appears) which is what makes
+   it cheap to keep current, but it also means a photo can only ever say what
+   its folder says. These tiles each carry a title, a place and a year, so they
+   are listed by hand — the cost of a photo here is one entry, not one file.
+
+   Three fields are set per photo rather than to a shared default, and all three
+   have to be re-picked when a photo is swapped:
+
+   - `position` is the tile crop. `object-cover` fills the tile and throws away
+     whatever overflows, so this is what decides that the face survives. Set
+     against where the face falls in that particular frame — the profile shots
+     and the two where the bride sits off-centre are why there is no sensible
+     default here.
+   - `height` / `mobileHeight` are the masonry tile heights, set from each
+     photo's aspect ratio rather than to a rhythm. The five landscape sources
+     take the short tiles (200–210) because a landscape photo in a tall tile is
+     nearly all crop; the portrait ones take 240–330. The variety this produces
+     is what makes the columns stagger, so the masonry falls out of the
+     photography rather than being imposed on it.
+
+   One file serves both the tile and the open viewer — there are no resized
+   copies. Several sources are large (0K4A3042 is 8088×5395, the two SFX frames
+   are 6000×4000), which the tiles' `loading="lazy"` covers for below-the-fold
+   work but not for the first screenful. Generating thumbnails is the fix if
+   this page ever needs to be fast on a phone connection. */
+export const works: Work[] = [
+  {
+    id: 1,
+    title: "Muhurtham, Green Silk",
+    category: "Bridal",
+    meta: "Hyderabad · 2025",
+    ...photo("bridal/IMG_3877.webp"),
+    position: "50% 26%",
+    height: 320,
+    mobileHeight: 180,
+  },
+  {
+    id: 2,
+    title: "Under the Veil",
+    category: "Bridal",
+    meta: "Hyderabad · 2025",
+    ...photo("bridal/IMG_3880.webp"),
+    /* A profile, and she sits left of centre — 50% here puts the crop through
+       her face at the two- and three-column widths. */
+    position: "38% 26%",
+    height: 300,
+    mobileHeight: 170,
+  },
+  {
+    id: 3,
+    title: "In the Chair",
+    category: "Before & After",
+    /* This and id 9 are the same session: bruise work going on in this frame,
+       finished in that one, which is what earns them the Before & After
+       filter. The meta the mock carried here read "Bridal trial · 2024",
+       which these two photographs are not — no year is claimed because the
+       files carry no date. */
+    meta: "Character SFX · Studio",
+    ...photo("editorial/img-3824.webp"),
+    position: "48% 45%",
+    height: 200,
+    mobileHeight: 118,
+  },
+  {
+    id: 4,
+    title: "Bloom Study",
+    category: "Beauty",
+    meta: "Studio · 2019",
+    ...photo("editorial/editorial-1.webp"),
+    position: "62% 40%",
+    height: 240,
+    mobileHeight: 140,
+  },
+  {
+    id: 5,
+    title: "Getting Ready",
+    category: "Behind the Scenes",
+    meta: "Reception · 2019",
+    ...photo("bridal/IMG-20191222-WA0006.webp"),
+    position: "60% 20%",
+    height: 300,
+    mobileHeight: 170,
+  },
+  {
+    id: 6,
+    title: "Red & Shadow",
+    category: "Bridal",
+    meta: "Reception · 2025",
+    ...photo("bridal/IMG_3892.webp"),
+    position: "56% 34%",
+    height: 330,
+    mobileHeight: 185,
+  },
+  {
+    id: 7,
+    title: "Neon Feathers",
+    category: "Editorial",
+    meta: "Body paint · 2019",
+    ...photo("editorial/image-2.webp"),
+    position: "40% 40%",
+    height: 260,
+    mobileHeight: 150,
+  },
+  {
+    id: 8,
+    title: "The Garland",
+    category: "Bridal",
+    meta: "Muhurtham · 2025",
+    ...photo("bridal/IMG_3894.webp"),
+    position: "50% 28%",
+    height: 290,
+    mobileHeight: 165,
+  },
+  {
+    id: 9,
+    title: "The Reveal",
+    category: "Before & After",
+    /* The finished half of id 3 — see the note there. */
+    meta: "Character SFX · Studio",
+    ...photo("editorial/img-3913.webp"),
+    position: "48% 42%",
+    height: 210,
+    mobileHeight: 122,
+  },
+  {
+    id: 10,
+    title: "Kanjeevaram Gold",
+    category: "Bridal",
+    meta: "Temple · 2018",
+    ...photo("bridal/IMG-20181218-WA0028.webp"),
+    /* Full-length and framed in an archway, so she sits low: her face is at
+       ~57% of the photo where every other portrait here puts it around 30%. */
+    position: "48% 50%",
+    height: 320,
+    mobileHeight: 180,
+  },
+  {
+    id: 11,
+    title: "Gilded Arrow",
+    category: "Editorial",
+    meta: "Studio · 2019",
+    ...photo("editorial/image-1.webp"),
+    position: "46% 45%",
+    height: 210,
+    mobileHeight: 122,
+  },
+  {
+    id: 12,
+    title: "The Final Clasp",
+    category: "Behind the Scenes",
+    meta: "Reception · 2019",
+    ...photo("bridal/IMG-20191222-WA0014.webp"),
+    position: "46% 34%",
+    height: 310,
+    mobileHeight: 175,
+  },
+  {
+    id: 13,
+    title: "Pellikuthuru Morning",
+    category: "Bridal",
+    meta: "Hyderabad · 2024",
+    ...photo("bridal/0K4A3951.webp"),
+    position: "52% 30%",
+    height: 310,
+    mobileHeight: 175,
+  },
+  {
+    id: 14,
+    title: "Kundan Portrait",
+    category: "Beauty",
+    meta: "Studio · 2019",
+    ...photo("bridal/image.webp"),
+    position: "48% 34%",
+    height: 250,
+    mobileHeight: 145,
+  },
+  {
+    id: 15,
+    title: "Reception, Ivory",
+    category: "Bridal",
+    meta: "Jubilee Hills · 2024",
+    ...photo("bridal/0K4A3042.webp"),
+    /* The widest source in the set by a distance (8088×5395) and her face sits
+       two thirds across it, so this is the one tile where the X does the work
+       and 50% would leave her at the edge. */
+    position: "68% 38%",
+    height: 200,
+    mobileHeight: 118,
+  },
+  {
+    id: 16,
+    title: "The Earring",
+    category: "Behind the Scenes",
+    meta: "Reception · 2019",
+    ...photo("bridal/IMG-20191222-WA0019.webp"),
+    position: "72% 32%",
+    height: 205,
+    mobileHeight: 120,
+  },
+  {
+    id: 17,
+    title: "Velvet Maroon",
+    category: "Bridal",
+    meta: "Reception · 2024",
+    ...photo("bridal/IMG_8453.webp"),
+    position: "46% 32%",
+    height: 300,
+    mobileHeight: 170,
+  },
+  {
+    id: 18,
+    title: "Yellow & Rose",
+    category: "Bridal",
+    meta: "Sangeet · 2019",
+    ...photo("bridal/bridal-1.webp"),
+    position: "56% 24%",
+    height: 250,
+    mobileHeight: 145,
+  },
+];
+
+/* The grid's filter row, in the order it is drawn. "All" leads because the
+   portfolio opens unfiltered — the one behavioural difference from
+   `galleryFilters`, where a category is always selected.
+
+   Derived rather than typed out so the row cannot drift from the data: a
+   category with no photos left in `works` drops out of the row instead of
+   sitting there as a chip that filters to an empty grid. Order follows
+   WORK_CATEGORY_ORDER, not first appearance in `works`, so re-ordering the
+   photos does not re-order the row. */
+const WORK_CATEGORY_ORDER: readonly WorkCategory[] = [
+  "Bridal",
+  "Editorial",
+  "Beauty",
+  "Before & After",
+  "Behind the Scenes",
+];
+
+export const workFilters: readonly WorkFilter[] = [
+  "All",
+  ...WORK_CATEGORY_ORDER.filter((c) => works.some((w) => w.category === c)),
 ];

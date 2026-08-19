@@ -10,10 +10,22 @@ interface NavLink {
   href?: string;
 }
 
+/* Bare fragments point at sections of the home page; anything else is a
+   document of its own and is left alone by `resolve` below.
+
+   Gallery is the second kind. It used to scroll to GalleryStrip further down
+   the home page, which meant the bar offered two routes to the same subject
+   and neither was the full one. The strip is still there and is still a good
+   teaser — AboutSection's CTA sends you to it, and the id it hangs off has not
+   moved — it simply isn't what a person clicking "Gallery" in the bar is
+   asking for.
+
+   Home is not in this list because it only exists on pages that are not the
+   home page; the component prepends it when there is somewhere to go. */
 const LINKS: NavLink[] = [
   { href: "#about", label: "About" },
   { href: "#services", label: "Services" },
-  { href: "#gallery", label: "Gallery" },
+  { href: "./gallery.html", label: "Gallery" },
   { label: "Blog" },
 ];
 
@@ -147,10 +159,31 @@ const BURGER = [
 
 interface NavProps {
   scrolled: boolean;
+  /** Where the home page is, from this page. Empty on the home page itself,
+   *  which is what tells the bar it is already there; "./" on gallery.html.
+   *
+   *  It does three jobs, all of them the same fact stated once:
+   *  - it is what the home page's fragments hang off, so "#about" becomes
+   *    "./#about" away from home — a bare "#about" on gallery.html would look
+   *    for a section that is not in that document and do nothing. Only bare
+   *    fragments are rewritten, so "./gallery.html" passes through untouched;
+   *  - it is the Home entry's href, and its emptiness is what decides whether
+   *    that entry is drawn at all;
+   *  - it is where the logo points. */
+  homeHref?: string;
 }
 
-export default function Nav({ scrolled }: NavProps) {
+export default function Nav({ scrolled, homeHref = "" }: NavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const resolve = (href: string) =>
+    href.startsWith("#") ? `${homeHref}${href}` : href;
+
+  /* Home leads the row, and only away from home — on the home page it would be
+     a link to the page you are reading, which is noise in a bar this short. */
+  const links: NavLink[] = homeHref
+    ? [{ href: homeHref, label: "Home" }, ...LINKS]
+    : LINKS;
 
   // The dropdown only exists below 860px; a resize past that point would
   // otherwise leave it flagged open underneath the desktop bar.
@@ -167,7 +200,12 @@ export default function Nav({ scrolled }: NavProps) {
   return (
     <header className={NAV} data-solid={solid}>
       <div className="mx-auto flex max-w-shell items-center justify-between gap-4 px-gutter">
-        <a href="#top" className="flex shrink-0 items-center gap-2.5">
+        {/* The mark is the conventional way back to the home page, so away
+            from home that is where it goes. On the home page there is nowhere
+            to go and it falls back to "#top" — the one fragment that needs no
+            element to match, which browsers answer by scrolling the document
+            to the top. */}
+        <a href={homeHref || "#top"} className="flex shrink-0 items-center gap-2.5">
           <img src={logo} alt="" className={LOGO} />
           {/* <span className="font-serif text-[clamp(15px,2.4vw,20px)] whitespace-nowrap text-white italic [text-shadow:0_1px_2px_rgba(44,26,28,0.45),0_2px_12px_rgba(44,26,28,0.3)] transition-[color] duration-400 ease-brand group-data-[solid=true]:text-ink group-data-[solid=true]:[text-shadow:none]">
             NS Makeup Artistry
@@ -180,9 +218,9 @@ export default function Nav({ scrolled }: NavProps) {
         <nav
           className={`${LINK_ROW} ${menuOpen ? "upto-859:flex" : "upto-859:hidden"}`}
         >
-          {LINKS.map((l) =>
+          {links.map((l) =>
             l.href ? (
-              <a key={l.label} href={l.href} className={LINK}>
+              <a key={l.label} href={resolve(l.href)} className={LINK}>
                 {l.label}
               </a>
             ) : (
@@ -191,6 +229,10 @@ export default function Nav({ scrolled }: NavProps) {
               </span>
             ),
           )}
+          {/* Not resolved either: every page that shows this bar also renders
+              <Enquire>, so the form is always in the current document and
+              sending this to the home page would be a needless page load. A
+              page that drops <Enquire> has to pass its href through resolve. */}
           <a href="#enquire" className={ENQUIRE}>
             Enquire
           </a>
