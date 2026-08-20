@@ -120,32 +120,11 @@ function photo(key: BlurKey): Pick<Work, "src" | "blur"> {
   return { src: module.default, blur: blurs[key] };
 }
 
-/* Contact details, and the one place they are configured.
-
-   The number and the address come from the environment rather than being
-   written here, so the real ones are not committed to a public repository.
-   See .env.example for the variables and README.md for how they reach a
-   GitHub Pages build.
-
-   The fallbacks are the placeholders this file used to hold. They keep a
-   fresh checkout with no .env.local running rather than failing to build,
-   and a placeholder number on a deployed site looks exactly like the
-   configuration mistake it is, which is the point.
-
-   EMAIL is only what the page *shows*. The enquiry form does not send here:
-   it POSTs to the Worker, which holds its own destination address. So this
-   is the mailto: link and the printed address, nothing more — and a scraper
-   that harvests it has not found the inbox the form actually writes to. */
-
-/** Digits only, country code first, no plus sign or spaces. wa.me's format. */
-const WHATSAPP_NUMBER = import.meta.env.VITE_OWNER_WHATSAPP || "910000000000";
-
-export const WHATSAPP_URL = "https://wa.me/" + WHATSAPP_NUMBER;
+export const WHATSAPP_URL = "https://wa.me/910000000000";
 export const INSTAGRAM_URL =
   "https://www.instagram.com/nagasushmithamakeupartist/";
 export const INSTAGRAM_HANDLE = "@nagasushmithamakeupartist";
-export const EMAIL =
-  import.meta.env.VITE_OWNER_EMAIL || "hello@nagasushmitha.com";
+export const EMAIL = "hello@nagasushmitha.com";
 
 export const gallery: GalleryShot[] = [
   ...bridalShots.map((src): GalleryShot => ({ src, category: "Bridal" })),

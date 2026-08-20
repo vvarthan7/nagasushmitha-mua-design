@@ -23,7 +23,6 @@ src/
   types.ts            Shapes behind everything data.ts exports
   vite-env.d.ts       Vite asset/CSS-module types + the `--custom-property` hole
   hooks/              useScrolled: drives the condensed header + floating button
-  lib/                enquiry.ts: validates the form and POSTs it to the Worker
   components/         One .tsx + one .module.css per section
   styles/
     global.css        Design tokens (--plum, --blush, …), reset, marquee keyframes
@@ -69,40 +68,6 @@ first, which is what decides the landing post and what the "keep reading" tile
 on each post points at. Everything else follows: the contents rail is derived
 from the `h2` blocks in the body, and [JournalPost.tsx](src/components/JournalPost.tsx)
 is the only layout, so no new component, `.html`, or build config is involved.
-
-## Enquiry form
-
-The form in [Enquire.tsx](src/components/Enquire.tsx) sends every submission to
-two places: an email to the owner, and a WhatsApp message. Neither can happen in
-the browser. The site is a static bundle on GitHub Pages, both providers need a
-credential, and anything in the bundle is public — so the form POSTs to a small
-Cloudflare Worker that holds the credentials and does the sending.
-
-```
-src/lib/enquiry.ts        validates and POSTs; knows nothing about providers
-src/components/Toast.tsx  the success / failure message
-worker/                   the Worker, its config, and the full setup guide
-```
-
-Email is the record of the enquiry and WhatsApp is a notification on top of it.
-A failed email fails the request and the visitor is told; a failed WhatsApp send
-is logged and swallowed, because the enquiry is already in the inbox and saying
-otherwise would only get it submitted twice.
-
-Three build-time values configure the client half. All three end up in the public
-bundle, which is exactly why none of them is a credential:
-
-| Variable | What it is |
-| --- | --- |
-| `VITE_ENQUIRY_ENDPOINT` | The deployed Worker URL. Left unset, the form says so rather than accepting an enquiry it cannot deliver |
-| `VITE_OWNER_WHATSAPP` | Digits only, country code first — what the wa.me links are built from |
-| `VITE_OWNER_EMAIL` | The address printed on the page. Not the enquiry destination, which lives in the Worker |
-
-Copy [.env.example](.env.example) to `.env.local` for development. On Pages they
-are repository *variables*, read in [deploy.yml](.github/workflows/deploy.yml).
-
-**The provider setup — Resend, the Worker deploy, and the two WhatsApp options —
-is in [worker/README.md](worker/README.md).**
 
 ## Notes
 
