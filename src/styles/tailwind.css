@@ -109,6 +109,11 @@
   /* Gallery viewer overlay */
   --animate-scrim-in: scrimIn 0.28s ease both;
   --animate-panel-in: panelIn 0.4s var(--ease-brand) both;
+
+  /* Enquiry toast. Short, and ease-brand rather than ease so it settles rather
+     than arrives — it appears unprompted in the corner of a page the reader is
+     already looking at, and a linear-feeling entrance reads as an alert. */
+  --animate-toast-in: toastIn 0.34s var(--ease-brand) both;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -133,6 +138,7 @@
 @custom-variant upto-900 (@media (max-width: 900px));
 @custom-variant upto-860 (@media (max-width: 860px));
 @custom-variant upto-859 (@media (max-width: 859px));
+@custom-variant upto-620 (@media (max-width: 620px));
 @custom-variant upto-560 (@media (max-width: 560px));
 @custom-variant short (@media (max-height: 820px));
 @custom-variant shorter (@media (max-height: 620px));
@@ -348,6 +354,20 @@
   from {
     opacity: 0;
     transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The toast rises from where the form's submit button is, rather than fading in
+   place — the movement is what carries "this is the answer to what you just
+   did" without the copy having to say so. */
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
   }
   to {
     opacity: 1;

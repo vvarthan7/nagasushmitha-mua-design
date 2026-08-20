@@ -27,7 +27,6 @@ import type {
   Testimonial,
   Work,
   WorkCategory,
-  WorkFilter,
 } from "./types";
 
 /* Gallery categories are folder-driven: drop a file into src/assets/<category>
@@ -121,11 +120,32 @@ function photo(key: BlurKey): Pick<Work, "src" | "blur"> {
   return { src: module.default, blur: blurs[key] };
 }
 
-export const WHATSAPP_URL = "https://wa.me/910000000000";
+/* Contact details, and the one place they are configured.
+
+   The number and the address come from the environment rather than being
+   written here, so the real ones are not committed to a public repository.
+   See .env.example for the variables and README.md for how they reach a
+   GitHub Pages build.
+
+   The fallbacks are the placeholders this file used to hold. They keep a
+   fresh checkout with no .env.local running rather than failing to build,
+   and a placeholder number on a deployed site looks exactly like the
+   configuration mistake it is, which is the point.
+
+   EMAIL is only what the page *shows*. The enquiry form does not send here:
+   it POSTs to the Worker, which holds its own destination address. So this
+   is the mailto: link and the printed address, nothing more — and a scraper
+   that harvests it has not found the inbox the form actually writes to. */
+
+/** Digits only, country code first, no plus sign or spaces. wa.me's format. */
+const WHATSAPP_NUMBER = import.meta.env.VITE_OWNER_WHATSAPP || "910000000000";
+
+export const WHATSAPP_URL = "https://wa.me/" + WHATSAPP_NUMBER;
 export const INSTAGRAM_URL =
   "https://www.instagram.com/nagasushmithamakeupartist/";
 export const INSTAGRAM_HANDLE = "@nagasushmithamakeupartist";
-export const EMAIL = "hello@nagasushmitha.com";
+export const EMAIL =
+  import.meta.env.VITE_OWNER_EMAIL || "hello@nagasushmitha.com";
 
 export const gallery: GalleryShot[] = [
   ...bridalShots.map((src): GalleryShot => ({ src, category: "Bridal" })),
@@ -402,7 +422,7 @@ export const works: Work[] = [
   {
     id: 4,
     title: "Bloom Study",
-    category: "Beauty",
+    category: "Party",
     meta: "Studio · 2019",
     ...photo("editorial/editorial-1.webp"),
     position: "62% 40%",
@@ -505,7 +525,7 @@ export const works: Work[] = [
   {
     id: 14,
     title: "Kundan Portrait",
-    category: "Beauty",
+    category: "Party",
     meta: "Studio · 2019",
     ...photo("bridal/image.webp"),
     position: "48% 34%",
@@ -557,9 +577,12 @@ export const works: Work[] = [
   },
 ];
 
-/* The grid's filter row, in the order it is drawn. "All" leads because the
-   portfolio opens unfiltered — the one behavioural difference from
-   `galleryFilters`, where a category is always selected.
+/* The grid's filter row, in the order it is drawn. Bridal leads because it is
+   the work most people arrive for, and it is also the filter the portfolio
+   opens on — there is no unfiltered view, so the first entry here is what the
+   page shows before anything is clicked. Reordering this list moves that
+   default with it; Portfolio's initial state names "Bridal" directly rather
+   than reading index 0, so the two have to be changed together.
 
    Derived rather than typed out so the row cannot drift from the data: a
    category with no photos left in `works` drops out of the row instead of
@@ -568,13 +591,11 @@ export const works: Work[] = [
    photos does not re-order the row. */
 const WORK_CATEGORY_ORDER: readonly WorkCategory[] = [
   "Bridal",
+  "Party",
   "Editorial",
-  "Beauty",
-  "Before & After",
   "Behind the Scenes",
+  "Before & After",
 ];
 
-export const workFilters: readonly WorkFilter[] = [
-  "All",
-  ...WORK_CATEGORY_ORDER.filter((c) => works.some((w) => w.category === c)),
-];
+export const workFilters: readonly WorkCategory[] =
+  WORK_CATEGORY_ORDER.filter((c) => works.some((w) => w.category === c));

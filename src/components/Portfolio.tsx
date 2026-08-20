@@ -1,7 +1,7 @@
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { works as allWorks, workFilters } from "../data";
-import type { Work, WorkFilter } from "../types";
+import type { Work, WorkCategory } from "../types";
 import { pill } from "../styles/ui";
 
 /* ── Class names ───────────────────────────────────────────────────────────
@@ -202,25 +202,22 @@ export default function Portfolio({
   headingAccent = "light",
   subhead = "Tap any frame to open it.",
 }: PortfolioProps) {
-  const [filter, setFilter] = useState<WorkFilter>("All");
+  /* There is no unfiltered view, so the grid always opens on a category. It is
+     named here rather than read off `workFilters[0]` because that row is
+     derived from the photos — its first entry is only Bridal for as long as a
+     bridal photo is still in the set — and a default that quietly follows the
+     data is worse than one that has to be changed in both places on purpose.
+     See the note above WORK_CATEGORY_ORDER in data.ts. */
+  const [filter, setFilter] = useState<WorkCategory>("Bridal");
   /* An index into `shown`, not into `works` — which is why changing the
      filter closes the viewer below rather than trying to carry the position
      across two different lists. */
   const [index, setIndex] = useState<number | null>(null);
 
   const shown = useMemo(
-    () =>
-      filter === "All" ? works : works.filter((w) => w.category === filter),
+    () => works.filter((w) => w.category === filter),
     [works, filter],
   );
-
-  const counts = useMemo(() => {
-    const byCategory = new Map<WorkFilter, number>([["All", works.length]]);
-    for (const w of works) {
-      byCategory.set(w.category, (byCategory.get(w.category) ?? 0) + 1);
-    }
-    return byCategory;
-  }, [works]);
 
   const close = useCallback(() => setIndex(null), []);
 
@@ -262,15 +259,15 @@ export default function Portfolio({
       {/* Wraps at every width. It used to scroll horizontally below 768px,
           which kept the row one line tall but hid half the filters off the
           right edge behind no affordance — on a phone there is no scrollbar to
-          suggest they are there, and the six categories are the only way to
+          suggest they are there, and the five categories are the only way to
           navigate this page. Better to spend two extra lines and show all of
           them.
 
           How many land per line is left to the browser rather than fixed at
-          two or three: the labels run from "All" to "Behind the Scenes", so any
-          fixed count would either strand the short chips in half-empty rows or
-          force the long one to wrap inside itself. `pill`'s compact form buys
-          the width back that the padding was spending. */}
+          two or three: the labels run from "Party" to "Behind the Scenes", so
+          any fixed count would either strand the short chips in half-empty rows
+          or force the long one to wrap inside itself. `pill`'s compact form
+          buys the width back that the padding was spending. */}
       <div className="flex flex-wrap justify-center gap-2 px-5 pb-8 md:px-gutter md:pb-10">
         {workFilters.map((name) => {
           const on = filter === name;
@@ -286,9 +283,6 @@ export default function Portfolio({
               className={pill(on, true)}
             >
               {name}
-              <span className="ml-2 font-serif text-[11px] tracking-normal opacity-60">
-                {String(counts.get(name) ?? 0).padStart(2, "0")}
-              </span>
             </button>
           );
         })}

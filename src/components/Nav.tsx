@@ -3,8 +3,8 @@ import logo from "../assets/logo.png";
 
 /* An entry with no `href` is listed but not yet live — it renders as a span
    rather than an anchor, so there is nothing to click, tab to, or middle-click
-   into a new tab. Give Blog its href once the page exists and it becomes a
-   normal link with no other change here. */
+   into a new tab. Nothing uses that today; it is kept for the next entry that
+   is designed before it is built. */
 interface NavLink {
   label: string;
   href?: string;
@@ -13,7 +13,14 @@ interface NavLink {
 /* Bare fragments point at sections of the home page; anything else is a
    document of its own and is left alone by `resolve` below.
 
-   Gallery is the second kind. It used to scroll to GalleryStrip further down
+   Gallery and Blog are the second kind. Blog has no index page behind it: the
+   journal is one document that renders whichever post its ?post= slug names,
+   and a bare ./blog.html carries no slug, so this entry lands on the newest
+   post. That is on purpose — with a handful of posts, a list of them is a
+   worse landing than the best one — and it means the bar needs no edit when
+   something new is published.
+
+   Gallery is the second kind too. It used to scroll to GalleryStrip further down
    the home page, which meant the bar offered two routes to the same subject
    and neither was the full one. The strip is still there and is still a good
    teaser — AboutSection's CTA sends you to it, and the id it hangs off has not
@@ -26,7 +33,7 @@ const LINKS: NavLink[] = [
   { href: "#about", label: "About" },
   { href: "#services", label: "Services" },
   { href: "./gallery.html", label: "Gallery" },
-  { label: "Blog" },
+  { href: "./blog.html", label: "Blog" },
 ];
 
 /* ── Class names ───────────────────────────────────────────────────────────

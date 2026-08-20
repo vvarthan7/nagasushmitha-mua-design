@@ -24,15 +24,10 @@ export interface GalleryShot {
  *  page, and does not need a new folder under src/assets. */
 export type WorkCategory =
   | "Bridal"
+  | "Party"
   | "Editorial"
-  | "Beauty"
   | "Before & After"
   | "Behind the Scenes";
-
-/** WorkCategory plus the grid's unfiltered view, which is where the portfolio
- *  opens. That is the other thing separating it from the gallery strip: there,
- *  every photo carries a category and one is always selected. */
-export type WorkFilter = "All" | WorkCategory;
 
 /** One tile in the portfolio grid. */
 export interface Work {
