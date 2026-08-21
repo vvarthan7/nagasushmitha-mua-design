@@ -120,7 +120,31 @@ function photo(key: BlurKey): Pick<Work, "src" | "blur"> {
   return { src: module.default, blur: blurs[key] };
 }
 
-export const WHATSAPP_URL = "https://wa.me/910000000000";
+/* The WhatsApp number comes from the environment so it can be changed without
+   a code edit or a rebuild of anyone's mental model of where contact details
+   live. It carries the VITE_ prefix because it is read in the browser, and
+   that prefix is exactly what makes Vite willing to inline it — meaning the
+   number is baked into the shipped JS in plain sight. Fine here: it is already
+   published as a click-to-chat link. It is also why RESEND_API_KEY must never
+   be given a VITE_ name; see functions/api/enquiry.ts.
+
+   Stripped to digits because wa.me wants international format with no +,
+   spaces or dashes, so "+91 93807 58632" and "919380758632" both work. */
+const whatsappNumber = (import.meta.env.VITE_WHATSAPP_NUMBER ?? "").replace(
+  /\D/g,
+  "",
+);
+
+/* Thrown rather than defaulted, in the same spirit as photo() above: a silent
+   fallback here would ship a dead WhatsApp link on a site whose visitors are
+   asked to use it for anything urgent. */
+if (!whatsappNumber) {
+  throw new Error(
+    "VITE_WHATSAPP_NUMBER is not set. Copy .env.example to .env.local for local work, or set it in the host's environment settings for a deploy.",
+  );
+}
+
+export const WHATSAPP_URL = `https://wa.me/${whatsappNumber}`;
 export const INSTAGRAM_URL =
   "https://www.instagram.com/nagasushmithamakeupartist/";
 export const INSTAGRAM_HANDLE = "@nagasushmithamakeupartist";
@@ -576,5 +600,6 @@ const WORK_CATEGORY_ORDER: readonly WorkCategory[] = [
   "Before & After",
 ];
 
-export const workFilters: readonly WorkCategory[] =
-  WORK_CATEGORY_ORDER.filter((c) => works.some((w) => w.category === c));
+export const workFilters: readonly WorkCategory[] = WORK_CATEGORY_ORDER.filter(
+  (c) => works.some((w) => w.category === c),
+);

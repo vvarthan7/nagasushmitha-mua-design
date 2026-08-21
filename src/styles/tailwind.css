@@ -30,6 +30,13 @@
   --color-meta: #a98a83;
   --color-dot: #e0b1a4;
 
+  /* ── Brand, external ───────────────────────────────────────────────────
+     WhatsApp's own green, and the one colour here that is not ours to tune.
+     It sits apart from the palette above because it answers to their brand
+     guidelines, not to this one — nudging it toward the blush/plum family
+     would cost the instant recognition that is the whole point of using it. */
+  --color-whatsapp: #25d366;
+
   /* ── Dark sections (academy, enquire, footer) ──────────────────────── */
   --color-academy-text: #f0cfc5;
   --color-academy-border: #b07a80;

@@ -211,7 +211,7 @@ export const LATEST_POST: Post = POSTS[0];
 
 /** Every post is one static URL on one document. The slug rides in the query
  *  string rather than the path because the site builds to plain files with no
- *  SPA fallback: /blog/kit-essentials would 404 on GitHub Pages, while
+ *  SPA fallback: /blog/kit-essentials would 404 against static assets, while
  *  blog.html?post=kit-essentials is a real file with an argument. */
 export function postHref(post: Post): string {
   return `./blog.html?post=${post.slug}`;

@@ -3,3 +3,6 @@ dist
 .vite
 *.local
 .DS_Store
+
+# Secrets: .env.local is covered by *.local, but keep plain .env out too.
+.env

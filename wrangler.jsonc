@@ -1,0 +1,23 @@
+{
+  // Deployment config for Cloudflare Workers. Its presence is what stops
+  // `wrangler deploy` from running framework auto-detection — that path tries
+  // to wire in @cloudflare/vite-plugin, which needs Vite 6+, and fails the
+  // build on Vite 5 before anything is compiled.
+  "name": "nagasushmitha-mua-design",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-01",
+
+  // Everything `vite build` emits, served straight from Cloudflare's edge.
+  // Asset requests never reach the Worker, so the three pages cost no
+  // invocations — only /api/enquiry does.
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+
+  // The handler reports refusals with console.error rather than throwing;
+  // without this, those lines have nowhere to land.
+  "observability": {
+    "enabled": true
+  }
+}

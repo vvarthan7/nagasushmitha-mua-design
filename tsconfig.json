@@ -28,5 +28,5 @@
        Academy and the `showAcademy` flag are parked behind commented-out JSX in
        App.tsx; those flags would turn parked work into build errors. */
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "functions", "worker", "vite.config.ts"]
 }
