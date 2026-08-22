@@ -25,11 +25,20 @@ import { pill } from "../styles/ui";
 const MAX_SHOTS = 10;
 
 /** How many cards flank the centre one. Further out than this they are hidden
- *  and inert. The page shows two either side; the viewer overrides to one, its
- *  frames being large enough that a second pair only crowds them. */
+ *  and inert. The page shows two either side; the viewer overrides to none, so
+ *  the photo you opened is the only one on the dark. Neighbours are a reason to
+ *  keep a frame small, and the overlay is the one place the frame should be as
+ *  large as the window allows. */
 const SIDES = 2;
 /** How long the outgoing set stays mounted. Must match animate-layer-out. */
 const SWAP_MS = 460;
+
+/** Where "View more" goes. The gallery is a document of its own rather than a
+ *  route, so this is a real page load — see gallery.html and Nav's entry, which
+ *  spells it the same way. Named once because the section and its viewer both
+ *  default to it, and a CTA that quietly points at "#" is the kind of thing
+ *  nobody notices until a visitor does. */
+const GALLERY_HREF = "./gallery.html";
 
 /** The photos behind one button, in the order the folder gives them. */
 const categoryShots = (category: GalleryCategory): GalleryShot[] =>
@@ -110,8 +119,10 @@ const ARROW = [
 const SCRIM = [
   "fixed inset-0 z-60 flex animate-scrim-in items-center justify-center",
   "bg-ink/94 p-[clamp(14px,3vw,36px)]",
-  /* The outermost frames sit wider than the viewport at these sizes — they are
-     meant to run off the edges, not to push the page sideways. */
+  /* The ring shows one frame but still lays out the whole set, the rest parked
+     a slot or more off centre and invisible. They are the reason for this: they
+     sit outside the viewport, and without the clip they would scroll the page
+     sideways. */
   "overflow-hidden",
 ].join(" ");
 
@@ -132,23 +143,34 @@ const CLOSE = [
   "hover:border-on-dark-strong hover:text-on-dark-strong",
 ].join(" ");
 
-/* Frames run ~30% larger here than on the page — the overlay has the whole
-   viewport to spend, and this is the view people open to actually look. The
-   pitch grows with them so the neighbours keep the same overlap. It gives that
-   extra size up under 900px, where there is no room to spend it.
+/* One frame, sized against the window rather than set in px: with no
+   neighbours to leave room for, the only thing still limiting it is the
+   viewport. 660px is the ceiling — past that a photo is shown larger than its
+   crop was judged at — and `100svh - 230px` is what the rest of the panel needs
+   underneath it: the scrim's padding, the two gaps, the arrow row and the CTA.
 
-   Short viewports — a laptop at 800px tall still has to fit the ring, the dots
-   and the CTA. Scaling the stage whole keeps the pitch in proportion; the
-   height comes down with it to close the gap that would otherwise be left. */
+   That min() is what replaces the two scale-downs this stage used to carry at
+   820px and 620px tall. Those shrank a fixed frame in jumps, which is what a
+   fixed frame forces; sizing off the viewport instead makes the frame as large
+   as the window allows at every height, and unable to overflow at any of them.
+
+   The card holds the 3:4 of the page's frames until the screen is too narrow
+   for it, where 86vw takes over — on a phone the frame goes narrower rather
+   than off both edges.
+
+   --slot is how far a frame travels on its way out. On the page it is less than
+   the card width, which is what overlaps the neighbours into a coverflow; here
+   there is nothing to overlap, so it is a card's width plus a margin. That is
+   what makes a step read as one photo leaving and the next arriving, rather
+   than as a dissolve in place. */
 const VIEWER_STAGE = [
-  "relative h-150 w-full cursor-grab touch-pan-y active:cursor-grabbing",
-  "[--card-w:420px] [--card-h:560px] [--slot:330px]",
+  "relative h-[var(--card-h)] w-full cursor-grab touch-pan-y",
+  "active:cursor-grabbing",
+  "[--card-h:min(660px,100svh_-_230px)]",
+  "[--card-w:min(calc(var(--card-h)_*_3_/_4),86vw)]",
+  "[--slot:calc(var(--card-w)_+_28px)]",
   /* Out-of-focus frames sink into the dark rather than hazing pale over it. */
   "[--veil-tint:var(--color-ink)]",
-  "upto-900:h-105 upto-900:[--card-w:240px]",
-  "upto-900:[--card-h:330px] upto-900:[--slot:200px]",
-  "short:h-117.5 short:scale-[0.78]",
-  "shorter:h-82.5 shorter:scale-[0.55]",
 ].join(" ");
 
 const VIEWER_ARROW = [
@@ -203,7 +225,7 @@ export default function GalleryStrip({
   headingAccent = "look",
   lead = "Bridal chairs, art shoots, prosthetics — the range, as it was shot.",
   ctaLabel = "View more",
-  ctaHref = "#",
+  ctaHref = GALLERY_HREF,
 }: GalleryStripProps) {
   const [category, setCategory] = useState<GalleryCategory>(defaultCategory);
   /* `index` grows unbounded — direction of travel is the sign of the step, so
@@ -449,7 +471,7 @@ interface ViewerProps {
  * Portalled to <body> so no ancestor's stacking or clipping can catch it, and
  * it sits on the same overlay layer as Lightbox (z-index 60).
  */
-function Viewer({ category, startAt = 0, onClose, ctaLabel = "View all", ctaHref = "#" }: ViewerProps) {
+function Viewer({ category, startAt = 0, onClose, ctaLabel = "View all", ctaHref = GALLERY_HREF }: ViewerProps) {
   const [index, setIndex] = useState(startAt);
   const stageRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -521,7 +543,7 @@ function Viewer({ category, startAt = 0, onClose, ctaLabel = "View all", ctaHref
         </button>
 
         <div className={VIEWER_STAGE} ref={stageRef}>
-          <Ring category={category} index={index} onStep={step} sides={1} />
+          <Ring category={category} index={index} onStep={step} sides={0} />
         </div>
 
         {/* Arrows and dots read as one control: step either side, jump in the

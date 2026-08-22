@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "blur": "node scripts/generate-blur.mjs"
+    "blur": "node scripts/generate-blur.mjs",
+    "images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

@@ -1,20 +1,16 @@
 /* Photos with a fixed role on the page, referenced by name below. */
 import bridal01 from "./assets/gallery/bridal-01.jpg";
 import bridal02 from "./assets/gallery/bridal-02.jpg";
-import bridal03 from "./assets/gallery/bridal-03.jpg";
 import bridal04 from "./assets/gallery/bridal-04.jpg";
-import bridal05 from "./assets/bridal/0K4A3042.webp";
-import bridal06 from "./assets/bridal/IMG_3894.webp";
-import bridal07 from "./assets/bridal/IMG_3877.webp";
-import bridal08 from "./assets/bridal/IMG_3892.webp";
-import reception01 from "./assets/gallery/reception-01.jpg";
 import editorial01 from "./assets/gallery/editorial-01.jpg";
-import editorial02 from "./assets/gallery/editorial-02.jpg";
-import editorial03 from "./assets/gallery/editorial-03.webp";
 import nagasushmitha from "./assets/nagasushmitha/nagasushmitha.webp";
-/* The portfolio grid's photos are not imported here. They go through `photo()`
-   below, which resolves a path to both the image and its blur placeholder at
-   once — see the note there for why the two cannot be named separately. */
+import serviceBridal from "./assets/bridal/NS_Bridal_10.webp";
+import serviceEditorial from "./assets/editorial/NS_Editorial_5.webp";
+import servicePersonal from "./assets/party/NS_Party_1.webp";
+/* The portfolio grid's photos and the banner's four frames are not imported
+   here. They go through `photo()` below, which resolves a path to both the
+   image and its blur placeholder at once — see the note there for why the two
+   cannot be named separately. */
 import { blurs, type BlurKey } from "./data.blur";
 import type {
   BookingStep,
@@ -67,8 +63,13 @@ function pickShots(modules: Record<string, ImageModule>): string[] {
     }
   }
 
+  /* `numeric` is what makes NS_Bridal_2 come before NS_Bridal_10. A plain
+     localeCompare orders these by character, which puts every teens-numbered
+     photo between 1 and 2 — and because the sets below are taken off the
+     front of this list, that ordering decides which photos appear at all, not
+     just the order they appear in. */
   return [...bestByPhoto.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
     .map(([, entry]) => entry.url);
 }
 
@@ -76,8 +77,18 @@ function pickShots(modules: Record<string, ImageModule>): string[] {
    phone cameras write .JPG. The pattern is repeated rather than hoisted into a
    constant because import.meta.glob is compiled away at build time and only
    accepts a literal. */
+const bannerModules = import.meta.glob<ImageModule>(
+  "./assets/banner/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}",
+  { eager: true },
+);
+
 const bridalModules = import.meta.glob<ImageModule>(
   "./assets/bridal/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}",
+  { eager: true },
+);
+
+const partyModules = import.meta.glob<ImageModule>(
+  "./assets/party/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}",
   { eager: true },
 );
 
@@ -89,16 +100,28 @@ const editorialModules = import.meta.glob<ImageModule>(
 const bridalShots = pickShots(bridalModules);
 const editorialShots = pickShots(editorialModules);
 
-/* The photos `photo()` can resolve, by path. These are the two folders the
-   placeholder generator covers, and the two have to stay in step — see the
-   FOLDERS note in scripts/generate-blur.mjs. */
+/* The photos `photo()` can resolve, by path. These are the four folders the
+   placeholder generator covers, and the two lists have to stay in step — see
+   the FOLDERS note in scripts/generate-blur.mjs.
+
+   bridal/, party/ and editorial/ are one folder per portfolio filter, so a
+   photo's folder is what decides which chip it appears under: moving a file
+   between them is the whole of re-categorising it, once its entry below names
+   the new path.
+
+   banner/ is here even though the hero names its four frames one by one rather
+   than sweeping the folder: going through the glob is what lets those frames
+   take their placeholder from the same key as their URL. */
 const modulesByPath: Record<string, ImageModule> = {
+  ...bannerModules,
   ...bridalModules,
+  ...partyModules,
   ...editorialModules,
 };
 
-/** Resolves one photo to the two things a portfolio tile needs: the hashed URL
- *  Vite emits, and its blur-up placeholder.
+/** Resolves one photo to the two things a blur-up needs: the hashed URL Vite
+ *  emits, and the placeholder held in front of it until it arrives. Used by the
+ *  portfolio tiles and by the banner's frames.
  *
  *  The point of going through a path rather than an import is that both come
  *  from the same key, so they cannot disagree. Pairing them by hand — a `src:`
@@ -110,7 +133,7 @@ const modulesByPath: Record<string, ImageModule> = {
  *  renamed or deleted photo fails to compile here rather than at runtime. The
  *  throw is for the other direction — a photo that exists but has no
  *  placeholder yet, i.e. `npm run blur` has not been run since it was added. */
-function photo(key: BlurKey): Pick<Work, "src" | "blur"> {
+function photo(key: BlurKey): { src: string; blur: string } {
   const module = modulesByPath[`./assets/${key}`];
   if (!module) {
     throw new Error(
@@ -150,14 +173,29 @@ export const INSTAGRAM_URL =
 export const INSTAGRAM_HANDLE = "@nagasushmithamakeupartist";
 export const EMAIL = "hello@nagasushmitha.com";
 
+/* How many photos each strip filter carries, taken off the front of its
+   folder by number: Bridal runs NS_Bridal_1 through _9, Editorial
+   NS_Editorial_1 through _5.
+
+   The folders hold more than that (21 and 14) and are meant to. The strip is a
+   teaser, so these caps are what lets the rest of each folder stay available to
+   photo() below without every new file turning up on the home page.
+
+   To change what a filter shows, renumber the files rather than editing a list
+   here: a set is always the first N by number, so NS_Bridal_12 joins the strip
+   by becoming NS_Bridal_4, not by being named anywhere in this file. */
+const STRIP_SHOTS: Record<GalleryCategory, number> = {
+  Bridal: 9,
+  Editorial: 5,
+};
+
 export const gallery: GalleryShot[] = [
-  ...bridalShots.map((src): GalleryShot => ({ src, category: "Bridal" })),
-  /* The one reception photo files under Bridal rather than carrying a filter of
-     its own. It sits in assets/gallery/ rather than the globbed assets/bridal/,
-     so unlike the rest of the group it has to be listed by hand — move the file
-     across if you'd rather the glob picked it up. */
-  { src: reception01, category: "Bridal" },
-  ...editorialShots.map((src): GalleryShot => ({ src, category: "Editorial" })),
+  ...bridalShots
+    .slice(0, STRIP_SHOTS.Bridal)
+    .map((src): GalleryShot => ({ src, category: "Bridal" })),
+  ...editorialShots
+    .slice(0, STRIP_SHOTS.Editorial)
+    .map((src): GalleryShot => ({ src, category: "Editorial" })),
 ];
 
 /* Every photo carries one of these, so there is no unfiltered view — the grid
@@ -171,84 +209,105 @@ export const galleryFilters: readonly GalleryCategory[] = [
    for rather than growing with the gallery. */
 export const instagramPosts: GalleryShot[] = gallery.slice(0, 8);
 
-export const heroImage = bridal03;
 export const aboutImage = nagasushmitha;
 export const academyImage = editorial01;
 export const beforeImage = bridal04;
 export const afterImage = bridal01;
 
 /* The banner cross-dissolves these in order over one 24s cycle. Exactly four,
-   or the CSS keyframes desync — see HeroReel.md.
+   or the CSS keyframes desync — see the SLOTS note in HeroReel.tsx.
 
    `position` is the background-position, and it is per-photo because cover
-   crops to whichever axis overflows. Only ever ONE axis does, so on any given
-   breakpoint half of each pair is inert:
+   crops to whichever axis overflows. Only ever ONE axis does, and which one it
+   is depends on the photo, not on the breakpoint: the banner is 100vw × 700px,
+   so a source overflows vertically above `700 × its aspect ratio` and
+   horizontally below it. Those four widths are:
 
-   - Desktop. The banner (100vw × 700px) is wider than all four sources, so
-     cover matches the width and the height overflows. Y picks the horizontal
-     band; X does nothing at all.
-   - Below 860px. The banner is `min(88svh, 700px)` — taller than it is wide —
-     so cover matches the height and the width overflows. Now X picks the
-     column and Y does nothing.
+     NS_Banner_1  8088×4949  landscape  1144px
+     NS_Banner_2  1280×853   landscape  1051px
+     NS_Banner_3  1333×1586  portrait    588px
+     NS_Banner_4  1333×1744  portrait    535px
 
-   So the X in `position` only ever takes effect through `mobilePosition`'s
-   fallback, and the Y in `mobilePosition` is decoration. Kept as full pairs
-   because background-position needs both.
+   Above its own number a frame is height-driven and only Y does anything;
+   below it the crop is width-driven and only X does. So on a desktop the two
+   landscape frames are still width-driven between 860 and ~1100px — their X
+   is live there, which is why they are left at 50% rather than treated as
+   inert — and on a tablet the two portrait frames stay height-driven down to
+   ~590 and ~535px, which is why their `mobilePosition` repeats the desktop Y
+   instead of parking it anywhere.
 
-   Sources are 1333×2000 portrait except bridal05, which is 8088×5395
-   landscape. The portrait ones lose most of their height on desktop — at
-   1440px wide only ~32% of the photo is in the band, at 1920px only ~24% —
-   which is why the Y values below are tuned per-photo against where the face
-   actually falls, not set to a shared default. Ken Burns then pushes in a
-   further ~9%, tightening around the centre.
+   `mobilePosition` takes over below 860px, where the banner turns portrait
+   (`min(88svh, 700px)`) and every frame ends up width-driven at phone widths.
+   Only the two landscape frames need a large X change there; the portrait
+   ones still need one, because even at ~65-70% of the photo a centred crop
+   leaves the face against an edge.
+
+   The portrait sources lose most of their height on desktop — at 1440px only
+   ~36% of NS_Banner_4 is in the band, at 1920px only ~27% — so the Y values
+   below are tuned per-photo against where the face falls, not set to a shared
+   default. Ken Burns then pushes in a further ~6%, tightening around the
+   centre and drifting up-left by 1.5%; the crops below leave room for it.
 
    Re-tune Y here if `height` on <HeroReel> changes: a taller banner takes a
    deeper band, so a value that framed the chin at 620px can leave slack at the
    top at 700px. These are set for 700px. */
 export const heroReelFrames: HeroReelFrame[] = [
   {
-    src: bridal06,
-    /* Head is cut above the brow at every desktop width — unavoidable, the
-       band is shorter than she is. Y is set by the chin instead: at 1920px
-       this lands it at ~86% of the banner, where 36% left it 1pt from being
-       sliced. */
-    position: "50% 39%",
-    alt: "Bridal look, soft glam with a red rose garland",
+    ...photo("banner/NS_Banner_1.webp"),
+    /* The widest source of the four, so the band is generous — 77% of the
+       photo at 1440px — and Y is set by the top of her hair rather than by the
+       face: 20% sits it just inside the upper edge at 1920px, where 25%
+       clipped it. The necklace stays in at both widths. */
+    position: "50% 20%",
+    /* Her face sits ~68% across, so once the crop narrows to ~33% of the photo
+       50% would leave her half out of frame on the right. */
+    mobilePosition: "68% 20%",
+    alt: "Reception look, soft glam with sapphire and diamond jewellery over an ivory beaded saree",
   },
   {
-    src: bridal05,
-    /* The one landscape source, so the band is generous — 73% of the photo at
-       1440px — and the top of her hair sits right at the upper edge. Left at
-       16%: raising it starts cutting her hair, lowering it only adds ceiling. */
-    position: "50% 16%",
-    /* Her face sits ~66% across this frame, so once the banner goes portrait
-       and the crop narrows to ~370 of its 1050 scaled px, 50% leaves her at the
-       very right edge. Desktop is width-driven and unaffected. */
-    mobilePosition: "76% 16%",
-    alt: "Reception look, shimmer eye with sapphire and diamond jewellery",
+    ...photo("banner/NS_Banner_2.webp"),
+    /* Lit from one side with the whole left half in shadow, so the framing is
+       carried entirely by where her face lands. 22% keeps the hairline and the
+       maang tikka in at 1920px without spending the bottom of the band on the
+       shoulder. */
+    position: "50% 22%",
+    /* The most off-centre of the four — her face is ~75% across and the crop
+       keeps only 36% of the photo — so this is the largest X shift here. At
+       72% her nose was still touching the right edge. */
+    mobilePosition: "88% 22%",
+    alt: "Getting ready, smoky eye and deep pink lip with a blue and gold embellished outfit",
   },
   {
-    src: bridal07,
-    /* The widest-framed of the four, so the extra 80px of banner buys real
-       headroom here: 32% brings the top of her hair just inside the band at
-       1440px, which 34% clipped. */
-    position: "50% 32%",
-    alt: "Muhurtham bridal look, warm eye with gold temple jewellery",
+    ...photo("banner/NS_Banner_3.webp"),
+    /* She sits low in this frame — hair from 38% of the photo, necklace down
+       to ~72% — so this Y is the outlier by design. 57% fits the maang tikka
+       and the kundan choker at 1440px; 62% put the tikka on the top edge and
+       max Ken Burns then cut it. */
+    position: "50% 57%",
+    /* Portrait source, so at phone widths the crop keeps ~64% of it. Her face
+       is ~61% across; 78% centres the band on her. Y repeats the desktop value
+       because between ~560 and 860px this frame is still height-driven. */
+    mobilePosition: "78% 57%",
+    alt: "Bridal portrait in low light, kundan choker and maang tikka with a red embroidered lehenga",
   },
   {
-    src: bridal08,
-    /* She sits far lower in this frame than in the other three — hair from 30%
-       of the photo, necklace down to 60% — so this Y is the outlier by design.
-       32% was spending the top third of the banner on empty black and slicing
-       the necklace; 40% fits her whole head and the kundan. */
-    position: "40% 40%",
-    alt: "Bridal portrait in low light, defined eye with kundan choker and red embroidered lehenga",
+    ...photo("banner/NS_Banner_4.webp"),
+    /* The tightest of the four: only ~36% of the photo is in the band at
+       1440px and ~27% at 1920px, so the head is cut above the brow at every
+       desktop width — unavoidable, the band is shorter than she is. Y is set
+       by the mouth instead, from both directions: under 26% the lip starts
+       leaving the band at 1920px, over it the brow goes at 1440px. */
+    position: "50% 26%",
+    /* She sits left of centre here, unlike the other three — face at ~39% —
+       so this X moves the opposite way. */
+    mobilePosition: "14% 26%",
+    alt: "Muhurtham look, warm gold eye with temple jewellery, nose ring and a green silk saree",
   },
 ];
 
 export const heroStats: HeroStat[] = [
-  { value: "400+", label: "Brides" },
-  { value: "Since 2014", label: "Practice" },
+  { value: "1000+", label: "Brides" },
+  { value: "Since 2017", label: "Practice" },
   { value: "Bangalore", label: "Cities" },
 ];
 
@@ -279,21 +338,21 @@ export const services: Service[] = [
     title: "Bridal makeup & hair",
     body: "Luxury bridal makeup that enhances, not hides, your natural beauty. Thoughtfully crafted for weddings, every bridal experience includes a personalised trial, wedding-day planning, and premium products that look flawless in both natural light and photography.",
     pills: ["Trial included", "Premium products", "All occasions"],
-    image: editorial02,
+    image: serviceBridal,
   },
   {
     name: "Editorial",
     title: "Editorial & portfolio",
     body: "Portfolio shoots, campaigns and film. Looks designed for flash, for continuity across a long shoot day, and for retouch-light delivery.",
     pills: ["On location", "Studio flash", "Continuity"],
-    image: editorial03,
+    image: serviceEditorial,
   },
   {
     name: "Personal",
     title: "Personal makeup course",
     body: "A private session for your own face — what suits your features, what to own, what to skip.",
     pills: ["One to one", "2 sessions", "Product list"],
-    image: bridal03,
+    image: servicePersonal,
   },
 ];
 
@@ -361,222 +420,501 @@ export const testimonials: Testimonial[] = [
    Separate from `gallery` above, and deliberately so. That one is folder-driven
    (drop a file into src/assets/<category> and it appears) which is what makes
    it cheap to keep current, but it also means a photo can only ever say what
-   its folder says. These tiles each carry a title, a place and a year, so they
-   are listed by hand — the cost of a photo here is one entry, not one file.
+   its folder says. These tiles each carry a title and a line of context, so
+   they are listed by hand — the cost of a photo here is one entry, not one
+   file.
+
+   The set is the three photo folders in full: bridal/ (21), party/ (8) and
+   editorial/ (14), one folder per filter chip. Nothing is held back, so the
+   count below is the count on disk, and a new photograph is one entry here
+   plus a run of `npm run blur`.
+
+   `meta` names the occasion and nothing else. The mock carried places and
+   years, and those were invented — these files carry no date and no location,
+   so nothing is claimed that the photograph cannot back up. It is also not
+   drawn anywhere today (see the note on Work.meta), which is exactly why a
+   wrong year would have sat there unseen until the day something started
+   printing it.
 
    Three fields are set per photo rather than to a shared default, and all three
    have to be re-picked when a photo is swapped:
 
    - `position` is the tile crop. `object-cover` fills the tile and throws away
-     whatever overflows, so this is what decides that the face survives. Set
-     against where the face falls in that particular frame — the profile shots
-     and the two where the bride sits off-centre are why there is no sensible
-     default here.
+     whatever overflows, so this is what decides that the face survives. Which
+     axis it acts on is decided by the source, not by taste: a tile is roughly
+     0.9 wide-to-tall, so the portrait sources (most of these, at 0.67) are
+     width-driven and only their Y does anything, while the 3:2 landscapes are
+     height-driven and only their X does. The values below are set against
+     where the face actually falls in that frame — the profiles, the
+     full-length shots and the ones where she stands off-centre are why there
+     is no sensible default here.
    - `height` / `mobileHeight` are the masonry tile heights, set from each
-     photo's aspect ratio rather than to a rhythm. The five landscape sources
-     take the short tiles (200–210) because a landscape photo in a tall tile is
-     nearly all crop; the portrait ones take 240–330. The variety this produces
-     is what makes the columns stagger, so the masonry falls out of the
-     photography rather than being imposed on it.
+     photo's aspect ratio rather than to a rhythm: the 2:3 portraits take the
+     tall tiles (300–320), the 3:4s the middle band (265–290), the squares
+     235–240 and the 3:2 landscapes the short ones (200–225), because a
+     landscape photo in a tall tile is nearly all crop. The variety this
+     produces is what makes the columns stagger, so the masonry falls out of
+     the photography rather than being imposed on it.
 
    One file serves both the tile and the open viewer — there are no resized
-   copies. Several sources are large (0K4A3042 is 8088×5395, the two SFX frames
-   are 6000×4000), which the tiles' `loading="lazy"` covers for below-the-fold
-   work but not for the first screenful. Generating thumbnails is the fix if
-   this page ever needs to be fast on a phone connection. */
+   copies. Several sources are large (the 6000×4000 SFX frames, NS_Bridal_10 at
+   4480×6720), which the tiles' `loading="lazy"` covers for below-the-fold work
+   but not for the first screenful. Generating thumbnails is the fix if this
+   page ever needs to be fast on a phone connection. */
 export const works: Work[] = [
   {
     id: 1,
-    title: "Muhurtham, Green Silk",
+    title: "Jasmine & Mauve",
     category: "Bridal",
-    meta: "Hyderabad · 2025",
-    ...photo("bridal/IMG_3877.webp"),
-    position: "50% 26%",
+    meta: "Muhurtham",
+    ...photo("bridal/NS_Bridal_1.webp"),
+    position: "50% 24%",
     height: 320,
-    mobileHeight: 180,
+    mobileHeight: 182,
   },
   {
     id: 2,
-    title: "Under the Veil",
+    title: "Reception Ivory",
     category: "Bridal",
-    meta: "Hyderabad · 2025",
-    ...photo("bridal/IMG_3880.webp"),
-    /* A profile, and she sits left of centre — 50% here puts the crop through
-       her face at the two- and three-column widths. */
-    position: "38% 26%",
-    height: 300,
-    mobileHeight: 170,
+    meta: "Reception",
+    ...photo("bridal/NS_Bridal_2.webp"),
+    position: "50% 25%",
+    height: 280,
+    mobileHeight: 160,
   },
   {
     id: 3,
-    title: "In the Chair",
-    category: "Before & After",
-    /* This and id 9 are the same session: bruise work going on in this frame,
-       finished in that one, which is what earns them the Before & After
-       filter. The meta the mock carried here read "Bridal trial · 2024",
-       which these two photographs are not — no year is claimed because the
-       files carry no date. */
-    meta: "Character SFX · Studio",
-    ...photo("editorial/img-3824.webp"),
-    position: "48% 45%",
-    height: 200,
-    mobileHeight: 118,
+    title: "The Earring",
+    category: "Bridal",
+    meta: "Reception",
+    ...photo("bridal/NS_Bridal_3.webp"),
+    position: "54% 18%",
+    height: 285,
+    mobileHeight: 162,
   },
   {
     id: 4,
-    title: "Bloom Study",
-    category: "Party",
-    meta: "Studio · 2019",
-    ...photo("editorial/editorial-1.webp"),
-    position: "62% 40%",
-    height: 240,
-    mobileHeight: 140,
+    title: "Under the Garlands",
+    category: "Bridal",
+    meta: "Muhurtham",
+    ...photo("bridal/NS_Bridal_4.webp"),
+    position: "56% 26%",
+    height: 310,
+    mobileHeight: 177,
   },
   {
     id: 5,
-    title: "Getting Ready",
-    category: "Behind the Scenes",
-    meta: "Reception · 2019",
-    ...photo("bridal/IMG-20191222-WA0006.webp"),
-    position: "60% 20%",
-    height: 300,
-    mobileHeight: 170,
+    title: "By the Window",
+    category: "Bridal",
+    meta: "Engagement",
+    ...photo("bridal/NS_Bridal_5.webp"),
+    /* She stands right of centre with her hand out to the frame on the left,
+       so the crop is nudged across to keep her face off the edge. */
+    position: "54% 24%",
+    height: 315,
+    mobileHeight: 180,
   },
   {
     id: 6,
-    title: "Red & Shadow",
+    title: "Final Touches",
     category: "Bridal",
-    meta: "Reception · 2025",
-    ...photo("bridal/IMG_3892.webp"),
-    position: "56% 34%",
-    height: 330,
-    mobileHeight: 185,
+    meta: "Getting ready",
+    ...photo("bridal/NS_Bridal_6.webp"),
+    /* Lit low, and she sits deep in the frame with two pairs of hands working
+       on her, so this Y is further down than the portraits around it. */
+    position: "50% 30%",
+    height: 300,
+    mobileHeight: 171,
   },
   {
     id: 7,
-    title: "Neon Feathers",
-    category: "Editorial",
-    meta: "Body paint · 2019",
-    ...photo("editorial/image-2.webp"),
-    position: "40% 40%",
-    height: 260,
-    mobileHeight: 150,
+    title: "Silver in the Grove",
+    category: "Bridal",
+    meta: "Bridal portrait",
+    ...photo("bridal/NS_Bridal_7.webp"),
+    position: "50% 28%",
+    height: 270,
+    mobileHeight: 154,
   },
   {
     id: 8,
-    title: "The Garland",
+    title: "Marigold Silk",
     category: "Bridal",
-    meta: "Muhurtham · 2025",
-    ...photo("bridal/IMG_3894.webp"),
-    position: "50% 28%",
+    meta: "Muhurtham",
+    ...photo("bridal/NS_Bridal_8.webp"),
+    position: "52% 26%",
+    height: 265,
+    mobileHeight: 151,
+  },
+  {
+    id: 9,
+    title: "Temple Green",
+    category: "Bridal",
+    meta: "Muhurtham",
+    ...photo("bridal/NS_Bridal_9.webp"),
+    position: "52% 20%",
+    height: 285,
+    mobileHeight: 162,
+  },
+  {
+    id: 10,
+    title: "White Gown",
+    category: "Bridal",
+    meta: "Engagement",
+    ...photo("bridal/NS_Bridal_10.webp"),
+    position: "52% 21%",
+    height: 320,
+    mobileHeight: 182,
+  },
+  {
+    id: 11,
+    title: "Eyes Closed, Rose",
+    category: "Bridal",
+    meta: "Bridal portrait",
+    ...photo("bridal/NS_Bridal_11.webp"),
+    position: "50% 25%",
+    height: 320,
+    mobileHeight: 182,
+  },
+  {
+    id: 12,
+    title: "Rose & Gold Tikka",
+    category: "Bridal",
+    meta: "Bridal portrait",
+    ...photo("bridal/NS_Bridal_12.webp"),
+    position: "54% 28%",
+    height: 315,
+    mobileHeight: 180,
+  },
+  {
+    id: 13,
+    title: "Green Kanjeevaram",
+    category: "Bridal",
+    meta: "Muhurtham",
+    ...photo("bridal/NS_Bridal_13.webp"),
+    position: "50% 24%",
+    height: 320,
+    mobileHeight: 182,
+  },
+  {
+    id: 14,
+    title: "Blush Drape",
+    category: "Bridal",
+    meta: "Reception",
+    ...photo("bridal/NS_Bridal_14.webp"),
+    position: "50% 24%",
+    height: 280,
+    mobileHeight: 160,
+  },
+  {
+    id: 15,
+    title: "Yellow Silk, Seated",
+    category: "Bridal",
+    meta: "Muhurtham",
+    ...photo("bridal/NS_Bridal_15.webp"),
+    position: "52% 25%",
+    height: 265,
+    mobileHeight: 151,
+  },
+  {
+    id: 16,
+    title: "Maroon & Lime",
+    category: "Bridal",
+    meta: "Reception",
+    ...photo("bridal/NS_Bridal_16.webp"),
+    /* Landscape, so the X is the live axis here: the tile keeps about 60% of
+       the width and she sits just left of centre. */
+    position: "46% 34%",
+    height: 205,
+    mobileHeight: 117,
+  },
+  {
+    id: 17,
+    title: "The Archway",
+    category: "Bridal",
+    meta: "Muhurtham",
+    ...photo("bridal/NS_Bridal_17.webp"),
+    /* Full length in a lit archway and she is small in the frame, so her face
+       falls near the middle of the photo rather than up at 25% like the rest
+       of the folder. */
+    position: "50% 42%",
+    height: 315,
+    mobileHeight: 180,
+  },
+  {
+    id: 18,
+    title: "Navy Sangeet",
+    category: "Bridal",
+    meta: "Sangeet",
+    ...photo("bridal/NS_Bridal_18.webp"),
+    position: "50% 30%",
+    height: 225,
+    mobileHeight: 128,
+  },
+  {
+    id: 19,
+    title: "In the Doorway",
+    category: "Bridal",
+    meta: "Muhurtham",
+    ...photo("bridal/NS_Bridal_19.webp"),
+    /* The widest source in the set (5:3), so the tile keeps barely half its
+       width and the X is doing all the work — she stands right of centre in
+       the doorway, with the near wall filling the left of the frame. */
+    position: "62% 40%",
+    height: 200,
+    mobileHeight: 114,
+  },
+  {
+    id: 20,
+    title: "Terrace Green",
+    category: "Bridal",
+    meta: "Bridal portrait",
+    ...photo("bridal/NS_Bridal_20.webp"),
+    position: "50% 24%",
     height: 290,
     mobileHeight: 165,
   },
   {
-    id: 9,
-    title: "The Reveal",
-    category: "Before & After",
-    /* The finished half of id 3 — see the note there. */
-    meta: "Character SFX · Studio",
-    ...photo("editorial/img-3913.webp"),
-    position: "48% 42%",
-    height: 210,
-    mobileHeight: 122,
-  },
-  {
-    id: 10,
-    title: "Kanjeevaram Gold",
+    id: 21,
+    title: "Powder Blue",
     category: "Bridal",
-    meta: "Temple · 2018",
-    ...photo("bridal/IMG-20181218-WA0028.webp"),
-    /* Full-length and framed in an archway, so she sits low: her face is at
-       ~57% of the photo where every other portrait here puts it around 30%. */
-    position: "48% 50%",
-    height: 320,
+    meta: "Getting ready",
+    ...photo("bridal/NS_Bridal_21.webp"),
+    /* She stands left of centre in a dark room, so this X moves the opposite
+       way to most of the folder. */
+    position: "44% 26%",
+    height: 315,
     mobileHeight: 180,
   },
   {
-    id: 11,
-    title: "Gilded Arrow",
-    category: "Editorial",
-    meta: "Studio · 2019",
-    ...photo("editorial/image-1.webp"),
-    position: "46% 45%",
-    height: 210,
-    mobileHeight: 122,
-  },
-  {
-    id: 12,
-    title: "The Final Clasp",
-    category: "Behind the Scenes",
-    meta: "Reception · 2019",
-    ...photo("bridal/IMG-20191222-WA0014.webp"),
-    position: "46% 34%",
-    height: 310,
-    mobileHeight: 175,
-  },
-  {
-    id: 13,
-    title: "Pellikuthuru Morning",
-    category: "Bridal",
-    meta: "Hyderabad · 2024",
-    ...photo("bridal/0K4A3951.webp"),
-    position: "52% 30%",
-    height: 310,
-    mobileHeight: 175,
-  },
-  {
-    id: 14,
-    title: "Kundan Portrait",
+    id: 22,
+    title: "Ochre Backdrop",
     category: "Party",
-    meta: "Studio · 2019",
-    ...photo("bridal/image.webp"),
-    position: "48% 34%",
-    height: 250,
-    mobileHeight: 145,
+    meta: "Studio",
+    ...photo("party/NS_Party_1.webp"),
+    position: "48% 25%",
+    height: 320,
+    mobileHeight: 182,
   },
   {
-    id: 15,
-    title: "Reception, Ivory",
-    category: "Bridal",
-    meta: "Jubilee Hills · 2024",
-    ...photo("bridal/0K4A3042.webp"),
-    /* The widest source in the set by a distance (8088×5395) and her face sits
-       two thirds across it, so this is the one tile where the X does the work
-       and 50% would leave her at the edge. */
-    position: "68% 38%",
-    height: 200,
-    mobileHeight: 118,
+    id: 23,
+    title: "Black Sequin",
+    category: "Party",
+    meta: "Studio",
+    ...photo("party/NS_Party_2.webp"),
+    /* Full length, so the face sits high in the frame and the Y goes with it —
+       much past 22% here and the crop takes the top of her head. */
+    position: "50% 20%",
+    height: 305,
+    mobileHeight: 174,
   },
   {
-    id: 16,
-    title: "The Earring",
-    category: "Behind the Scenes",
-    meta: "Reception · 2019",
-    ...photo("bridal/IMG-20191222-WA0019.webp"),
-    position: "72% 32%",
+    id: 24,
+    title: "Red & Champagne",
+    category: "Party",
+    meta: "Cocktail",
+    ...photo("party/NS_Party_3.webp"),
+    /* The one square source in the set, so neither axis is doing much work —
+       both values sit off centre only because she does. */
+    position: "54% 32%",
+    height: 240,
+    mobileHeight: 137,
+  },
+  {
+    id: 25,
+    title: "Marigold Studio",
+    category: "Party",
+    meta: "Studio",
+    ...photo("party/NS_Party_4.webp"),
+    position: "50% 8%",
+    height: 320,
+    mobileHeight: 182,
+  },
+  {
+    id: 26,
+    title: "Magenta Pallu",
+    category: "Party",
+    meta: "Studio",
+    ...photo("party/NS_Party_5.webp"),
+    position: "46% 22%",
+    height: 320,
+    mobileHeight: 182,
+  },
+  {
+    id: 27,
+    title: "Teal, Low Key",
+    category: "Party",
+    meta: "Studio",
+    ...photo("party/NS_Party_6.webp"),
+    /* Landscape and she sits well right of centre against black, so this X is
+       doing the framing on its own. */
+    position: "62% 34%",
     height: 205,
-    mobileHeight: 120,
+    mobileHeight: 117,
   },
   {
-    id: 17,
-    title: "Velvet Maroon",
-    category: "Bridal",
-    meta: "Reception · 2024",
-    ...photo("bridal/IMG_8453.webp"),
-    position: "46% 32%",
-    height: 300,
-    mobileHeight: 170,
+    id: 28,
+    title: "Botanical Drape",
+    category: "Party",
+    meta: "Studio",
+    ...photo("party/NS_Party_7.webp"),
+    position: "50% 10%",
+    height: 320,
+    mobileHeight: 182,
   },
   {
-    id: 18,
-    title: "Yellow & Rose",
-    category: "Bridal",
-    meta: "Sangeet · 2019",
-    ...photo("bridal/bridal-1.webp"),
-    position: "56% 24%",
-    height: 250,
-    mobileHeight: 145,
+    id: 29,
+    title: "Emerald Glow",
+    category: "Party",
+    meta: "Studio",
+    ...photo("party/NS_Party_8.webp"),
+    position: "56% 36%",
+    height: 205,
+    mobileHeight: 117,
+  },
+  {
+    id: 30,
+    title: "Red Ochre",
+    category: "Editorial",
+    meta: "Character",
+    ...photo("editorial/NS_Editorial_1.webp"),
+    position: "54% 32%",
+    height: 310,
+    mobileHeight: 177,
+  },
+  {
+    id: 31,
+    title: "Arrow & Henna",
+    category: "Editorial",
+    meta: "Concept shoot",
+    ...photo("editorial/NS_Editorial_2.webp"),
+    position: "56% 40%",
+    height: 205,
+    mobileHeight: 117,
+  },
+  {
+    id: 32,
+    title: "UV Bloom",
+    category: "Editorial",
+    meta: "Body paint",
+    ...photo("editorial/NS_Editorial_3.webp"),
+    position: "48% 45%",
+    height: 240,
+    mobileHeight: 137,
+  },
+  {
+    id: 33,
+    title: "Kundan in the Dark",
+    category: "Editorial",
+    meta: "Portfolio shoot",
+    ...photo("editorial/NS_Editorial_4.webp"),
+    position: "48% 26%",
+    height: 310,
+    mobileHeight: 177,
+  },
+  {
+    id: 34,
+    title: "Flower Crown",
+    category: "Editorial",
+    meta: "Portfolio shoot",
+    ...photo("editorial/NS_Editorial_5.webp"),
+    position: "58% 38%",
+    height: 235,
+    mobileHeight: 134,
+  },
+  {
+    id: 35,
+    title: "Tangerine Tulle",
+    category: "Editorial",
+    meta: "Portfolio shoot",
+    ...photo("editorial/NS_Editorial_6.webp"),
+    position: "48% 26%",
+    height: 265,
+    mobileHeight: 151,
+  },
+  {
+    id: 36,
+    title: "Hands in the Dark",
+    category: "Editorial",
+    meta: "Portfolio shoot",
+    ...photo("editorial/NS_Editorial_7.webp"),
+    position: "52% 38%",
+    height: 205,
+    mobileHeight: 117,
+  },
+  {
+    id: 37,
+    title: "Nilakantha",
+    category: "Editorial",
+    meta: "Character",
+    ...photo("editorial/NS_Editorial_8.webp"),
+    position: "48% 34%",
+    height: 205,
+    mobileHeight: 117,
+  },
+  {
+    id: 38,
+    title: "Blue Smoke",
+    category: "Editorial",
+    /* The same sitting as id 37, one frame further on. */
+    meta: "Character",
+    ...photo("editorial/NS_Editorial_9.webp"),
+    position: "46% 36%",
+    height: 205,
+    mobileHeight: 117,
+  },
+  {
+    id: 39,
+    title: "Temple Gold",
+    category: "Editorial",
+    meta: "Portfolio shoot",
+    ...photo("editorial/NS_Editorial_10.webp"),
+    position: "50% 23%",
+    height: 310,
+    mobileHeight: 177,
+  },
+  {
+    id: 40,
+    title: "Bruise Work",
+    category: "Editorial",
+    /* Prosthetic work going on in this frame and finished in id 41 — the same
+       session, and the pair reads as one if they land in the same column. */
+    meta: "Character SFX",
+    ...photo("editorial/NS_Editorial_11.webp"),
+    position: "58% 40%",
+    height: 205,
+    mobileHeight: 117,
+  },
+  {
+    id: 41,
+    title: "The Reveal",
+    category: "Editorial",
+    /* The finished half of id 40 — see the note there. */
+    meta: "Character SFX",
+    ...photo("editorial/NS_Editorial_13.webp"),
+    position: "50% 38%",
+    height: 205,
+    mobileHeight: 117,
+  },
+  {
+    id: 42,
+    title: "Gilded Profile",
+    category: "Editorial",
+    meta: "Portfolio shoot",
+    ...photo("editorial/NS_Editorial_12.webp"),
+    position: "54% 28%",
+    height: 310,
+    mobileHeight: 177,
+  },
+  {
+    id: 43,
+    title: "Greasepaint Grin",
+    category: "Editorial",
+    meta: "Character SFX",
+    ...photo("editorial/NS_Editorial_14.webp"),
+    position: "50% 30%",
+    height: 310,
+    mobileHeight: 177,
   },
 ];
 
@@ -591,7 +929,13 @@ export const works: Work[] = [
    category with no photos left in `works` drops out of the row instead of
    sitting there as a chip that filters to an empty grid. Order follows
    WORK_CATEGORY_ORDER, not first appearance in `works`, so re-ordering the
-   photos does not re-order the row. */
+   photos does not re-order the row.
+
+   That derivation is what currently hides "Behind the Scenes" and "Before &
+   After": no photo above carries either, so neither chip is drawn. They stay
+   listed here — and in WorkCategory — because the photographs are coming, and
+   this way turning them back on is one entry in `works`, not a change in
+   three files. Do not "tidy" them away. */
 const WORK_CATEGORY_ORDER: readonly WorkCategory[] = [
   "Bridal",
   "Party",

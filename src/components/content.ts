@@ -14,8 +14,8 @@
    Heroes are imported rather than written as "/journal/trial.jpg" so Vite
    hashes and fingerprints them like every other photo on the site; a path
    under public/ would ship unhashed and uncached. */
-import bridalTrialHero from "../assets/bridal/IMG-20191222-WA0019.webp";
-import kitEssentialsHero from "../assets/editorial/img-3824.webp";
+import bridalTrialHero from "../assets/bridal/NS_Bridal_1.webp";
+import kitEssentialsHero from "../assets/editorial/NS_Editorial_11.webp";
 
 export type BlockKind = "lead" | "p" | "h2" | "h3" | "num" | "quote";
 
@@ -100,8 +100,8 @@ const bridalTrial: Post = {
   date: "August 2026",
   read: "8 min read",
   hero: bridalTrialHero,
-  alt: "A bride having an earring fastened, in soft glam with a deep berry lip",
-  pos: "72% 34%",
+  alt: "A bride fastening an earring, in soft glam with a blush saree and a diamond choker",
+  pos: "54% 26%",
   body: [
     { k: "lead", t: "If there is one piece of advice I could scream from the rooftops to every engaged person, it is this: do not book your wedding makeup artist without a trial." },
     { k: "p", t: "Think of the trial run as the dress rehearsal for your face. It is not only a test of the artist's skill; it is a test of chemistry, timing and your own expectations. A successful trial takes the anxiety out of your wedding morning and replaces it with pure excitement." },
@@ -168,8 +168,8 @@ const kitEssentials: Post = {
   date: "July 2026",
   read: "6 min read",
   hero: kitEssentialsHero,
-  alt: "An eyeshadow palette held beside a face mid-application",
-  pos: "48% 42%",
+  alt: "A palette held up beside a face mid-application, character work in progress",
+  pos: "58% 40%",
   body: [
     { k: "lead", t: "Every kit tour looks the same: the palettes, the brush roll, the airbrush compressor. Nobody films the outside pocket — which is where the things that actually save a morning live." },
     { k: "p", t: "I have worked jobs where the foundation match was flawless and the day still nearly came apart. Because the room was lit by one tungsten bulb. Because there was no socket within three metres of the chair. Because the bride had not had a sip of water in four hours and would not risk her lip." },

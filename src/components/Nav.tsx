@@ -1,40 +1,14 @@
 import { useEffect, useState } from "react";
-import logo from "../assets/logo.png";
-
-/* An entry with no `href` is listed but not yet live — it renders as a span
-   rather than an anchor, so there is nothing to click, tab to, or middle-click
-   into a new tab. Nothing uses that today; it is kept for the next entry that
-   is designed before it is built. */
-interface NavLink {
-  label: string;
-  href?: string;
-}
-
-/* Bare fragments point at sections of the home page; anything else is a
-   document of its own and is left alone by `resolve` below.
-
-   Gallery and Blog are the second kind. Blog has no index page behind it: the
-   journal is one document that renders whichever post its ?post= slug names,
-   and a bare ./blog.html carries no slug, so this entry lands on the newest
-   post. That is on purpose — with a handful of posts, a list of them is a
-   worse landing than the best one — and it means the bar needs no edit when
-   something new is published.
-
-   Gallery is the second kind too. It used to scroll to GalleryStrip further down
-   the home page, which meant the bar offered two routes to the same subject
-   and neither was the full one. The strip is still there and is still a good
-   teaser — AboutSection's CTA sends you to it, and the id it hangs off has not
-   moved — it simply isn't what a person clicking "Gallery" in the bar is
-   asking for.
-
-   Home is not in this list because it only exists on pages that are not the
-   home page; the component prepends it when there is somewhere to go. */
-const LINKS: NavLink[] = [
-  { href: "#about", label: "About" },
-  { href: "#services", label: "Services" },
-  { href: "./gallery.html", label: "Gallery" },
-  { href: "./blog.html", label: "Blog" },
-];
+import logo from "../assets/logo.webp";
+/* The entries themselves live next door, because index.html's boot bar draws
+   the same row before this component has loaded and reads them from there. See
+   nav.links.ts for why that is a module rather than a list in this file. */
+import {
+  LINKS,
+  ENQUIRE_LABEL,
+  MENU_LABEL,
+  type NavLink,
+} from "./nav.links";
 
 /* ── Class names ───────────────────────────────────────────────────────────
    The bar has two palettes and swaps between them wholesale, which is what
@@ -212,7 +186,10 @@ export default function Nav({ scrolled, homeHref = "" }: NavProps) {
             to go and it falls back to "#top" — the one fragment that needs no
             element to match, which browsers answer by scrolling the document
             to the top. */}
-        <a href={homeHref || "#top"} className="flex shrink-0 items-center gap-2.5">
+        <a
+          href={homeHref || "#top"}
+          className="flex shrink-0 items-center gap-2.5"
+        >
           <img src={logo} alt="" className={LOGO} />
           {/* <span className="font-serif text-[clamp(15px,2.4vw,20px)] whitespace-nowrap text-white italic [text-shadow:0_1px_2px_rgba(44,26,28,0.45),0_2px_12px_rgba(44,26,28,0.3)] transition-[color] duration-400 ease-brand group-data-[solid=true]:text-ink group-data-[solid=true]:[text-shadow:none]">
             NS Makeup Artistry
@@ -241,7 +218,7 @@ export default function Nav({ scrolled, homeHref = "" }: NavProps) {
               sending this to the home page would be a needless page load. A
               page that drops <Enquire> has to pass its href through resolve. */}
           <a href="#enquire" className={ENQUIRE}>
-            Enquire
+            {ENQUIRE_LABEL}
           </a>
         </nav>
 
@@ -252,7 +229,7 @@ export default function Nav({ scrolled, homeHref = "" }: NavProps) {
           onClick={() => setMenuOpen((v) => !v)}
         >
           <span className="font-sans text-[10px] font-semibold tracking-[0.16em] uppercase">
-            {menuOpen ? "Close" : "Menu"}
+            {menuOpen ? "Close" : MENU_LABEL}
           </span>
         </button>
       </div>

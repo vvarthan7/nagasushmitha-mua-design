@@ -1,5 +1,5 @@
 /* Regenerates src/data.blur.ts — the blur-up placeholders the portfolio grid
-   shows while a photo is still downloading.
+   and the hero banner show while a photo is still downloading.
  *
  * Run it with `npm run blur` after adding, replacing or re-cropping anything
  * under src/assets. Nothing runs it automatically: the output is committed, so
@@ -10,13 +10,16 @@
  *
  * Each placeholder is a WebP resized to WIDTH px on its long edge and encoded
  * as a data URI. At 20px the file lands around 200–400 bytes, which is small
- * enough to inline 18 of them and still be a fraction of one real photo. It is
+ * enough to inline every one of them and still be a fraction of a single real
+ * photo — the four banner frames alone ship 1.4 MB of WebP. It is
  * also small enough that upscaling it to tile size is inherently soft — the CSS
  * blur in the component is smoothing the block edges, not creating the effect.
  *
- * Aspect ratio is deliberately preserved rather than cropped to the tile. The
- * component paints these with the same object-position the real photo uses, so
- * a placeholder cropped here would be cropped twice and slide off the frame. */
+ * Aspect ratio is deliberately preserved rather than cropped to the frame it
+ * fills. Both components paint these with the same position the real photo
+ * uses — Portfolio through object-position, HeroReel through the same
+ * --frame-pos it hands the frame — so a placeholder cropped here would be
+ * cropped twice and slide out of register with the photo it stands in for. */
 import { Buffer } from "node:buffer";
 import { readdir, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
@@ -29,16 +32,18 @@ const QUALITY = 45;
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const assets = join(root, "src", "assets");
-/* Only the folders the portfolio grid draws from. gallery/ and nagasushmitha/
-   are left out deliberately: nothing in `works` uses them, and every entry here
-   ships inline in the JS whether a tile references it or not — an object
-   literal's unused properties cannot be tree-shaken away. Add a folder here the
-   moment a works entry needs one, and the missing key is a compile error in
+/* Only the folders something on the page actually blurs up: the portfolio
+   grid draws from bridal/, party/ and editorial/ — one folder per filter in
+   its row — and the hero banner from banner/. gallery/ and nagasushmitha/ are
+   left out deliberately — nothing blurs them, and every entry here ships
+   inline in the JS whether anything references it or not, since an object
+   literal's unused properties cannot be tree-shaken away. Add a folder here
+   the moment something needs one, and the missing key is a compile error in
    data.ts rather than a silent blank. */
-const FOLDERS = ["bridal", "editorial"];
+const FOLDERS = ["banner", "bridal", "party", "editorial"];
 const IMAGE = /\.(jpe?g|png|webp|avif)$/i;
 
-/** "bridal/IMG_3877.webp" — the path as data.ts spells it, minus "./assets/",
+/** "bridal/NS_Bridal_1.webp" — the path as data.ts spells it, minus "./assets/",
  *  so the key next to a `src:` import reads as the same file. */
 function keyFor(file) {
   return relative(assets, file).split(/[\\/]/).join("/");

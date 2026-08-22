@@ -1,4 +1,4 @@
-import { heroImage, heroStats, WHATSAPP_URL } from "../data";
+import { heroStats, WHATSAPP_URL } from "../data";
 
 const ACTION = [
   "rounded-full font-sans text-[11px] font-semibold tracking-[0.14em]",
@@ -49,7 +49,7 @@ export default function Hero() {
 
         <div className="mt-3.5 flex flex-wrap gap-[clamp(20px,4vw,34px)] border-t border-border-soft pt-5">
           {heroStats.map((stat) => (
-            <div key={stat.label} className="flex flex-col gap-[3px]">
+            <div key={stat.label} className="flex flex-col gap-0.75">
               <div className="font-serif text-[clamp(24px,3.4vw,30px)] text-plum">
                 {stat.value}
               </div>
@@ -59,14 +59,6 @@ export default function Hero() {
             </div>
           ))}
         </div>
-      </div>
-
-      <div className={FRAME}>
-        <img
-          src={heroImage}
-          alt="Bride wearing bridal makeup by Naga Sushmitha"
-          className="block h-full w-full object-cover transition-transform duration-1400 ease-brand hover:scale-[1.07]"
-        />
       </div>
     </section>
   );

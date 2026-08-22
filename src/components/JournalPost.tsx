@@ -106,7 +106,7 @@ export default function JournalPost({
           src={post.hero}
           alt={post.alt}
           style={{ objectPosition: post.pos }}
-          className="h-[260px] w-full object-cover md:h-full md:min-h-[420px]"
+          className="h-[260px] w-full object-cover md:h-[500px]"
         />
       </div>
 
