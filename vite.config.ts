@@ -4,11 +4,6 @@ import { fileURLToPath } from "node:url";
 import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-/* The bar's own entries, so the boot layer below draws the row React will draw
-   rather than a second copy of the labels that drifts from it. Vite bundles
-   this config before running it, which is what makes importing from src/ work
-   here at all — see the note at the top of nav.links.ts. */
-import { LINKS, ENQUIRE_LABEL, MENU_LABEL } from "./src/components/nav.links";
 
 type PagesFunction = (context: {
   request: Request;
@@ -196,18 +191,10 @@ function navMark(): string | undefined {
  *    still loading into what looked like a full-screen splash screen and then a
  *    hard cut to the site.
  *
- *    The links are in it, read from nav.links.ts rather than restated here —
- *    that module exists so this file and Nav.tsx cannot disagree about what the
- *    bar says. They are the cheapest thing on the page and the most obviously
- *    missing: a bar holding a mark and nothing else reads as a page that has
- *    failed rather than one that is loading, and text needs no request at all.
- *    What arrives with React is the same row turning live, rather than a bar
- *    appearing from nothing.
- *
- *    They will paint in system-ui and reflow slightly once Manrope arrives,
- *    because the font is a separate request with font-display: swap. That swap
- *    happens whether the labels are here or not; putting them here only means
- *    it is visible a second earlier.
+ *    Just the mark, not the links: the row is plain text behind a font that is
+ *    still loading, so it is cheap enough to skip waiting for and let React
+ *    draw the moment it mounts, rather than keeping a second copy of the bar's
+ *    labels in this file to stay in sync with Nav.tsx.
  *
  *    Inside #root, not beside it, because that is what makes it self-clearing:
  *    createRoot() empties its container on the first commit, so the layer goes
@@ -284,43 +271,20 @@ function bannerFirstPaint(): Plugin {
           `filter:blur(16px);transform:scale(1.1)}` +
           `@media(max-width:860px){#boot-img{background-position:68% 20%}}` +
           `#boot-bar{position:absolute;top:0;left:0;right:0;padding:12px 0}` +
-          `#boot-bar>div{display:flex;align-items:center;justify-content:space-between;` +
-          `gap:16px;margin:0 auto;max-width:1240px;padding:0 clamp(18px,4vw,44px)}` +
+          `#boot-bar>div{display:flex;align-items:center;margin:0 auto;` +
+          `max-width:1240px;padding:0 clamp(18px,4vw,44px)}` +
           `#boot-bar img{display:block;height:clamp(26px,4vw,32px);width:auto;` +
-          `filter:drop-shadow(0 2px 6px rgba(44,26,28,.45))}` +
-          /* The row, and the burger that stands in for it below 860px. Only one
-             of the two is ever displayed, which is the same swap LINK_ROW and
-             BURGER make in Nav. */
-          `#boot-nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;` +
-          `gap:clamp(2px,0.8vw,7px);font-family:Manrope,system-ui,sans-serif;` +
-          `text-transform:uppercase;white-space:nowrap;color:#fff;` +
-          `text-shadow:0 1px 2px rgba(44,26,28,.45),0 2px 10px rgba(44,26,28,.28)}` +
-          `#boot-nav span{padding:7px 13px;font-size:12px;font-weight:700;letter-spacing:.14em}` +
-          `#boot-nav .cta{margin-left:clamp(6px,1.2vw,14px);padding:9px 19px;border-radius:999px;` +
-          `background:#fff;color:#7d3646;font-size:11px;font-weight:600;letter-spacing:.14em;` +
-          `text-shadow:none}` +
-          `#boot-burger{display:none;align-items:center;justify-content:center;min-height:44px;` +
-          `min-width:44px;padding:0 14px;border:1px solid rgba(255,255,255,.55);border-radius:999px;` +
-          `font-family:Manrope,system-ui,sans-serif;font-size:10px;font-weight:600;` +
-          `letter-spacing:.16em;text-transform:uppercase;color:#fff;` +
-          `text-shadow:0 1px 2px rgba(44,26,28,.45),0 2px 10px rgba(44,26,28,.28)}` +
-          `@media(max-width:859px){#boot-nav{display:none}#boot-burger{display:flex}}`;
+          `filter:drop-shadow(0 2px 6px rgba(44,26,28,.45))}`;
 
-        /* Spans rather than anchors, and the whole layer is aria-hidden: this
-           is a picture of the bar, not the bar. Real links here would be a
-           second set of the same destinations in the tab order and a second
-           navigation announced to a screen reader, both of which would then
-           vanish mid-read when React replaced them. */
-        const row =
-          LINKS.map((link) => `<span>${link.label}</span>`).join("") +
-          `<span class="cta">${ENQUIRE_LABEL}</span>`;
-
+        /* The whole layer is aria-hidden: this is a picture of the banner, not
+           the bar. Only the mark is drawn — no links, so nothing here ends up
+           as a second set of the same destinations in the tab order or a
+           second navigation announced to a screen reader that would then
+           vanish mid-read when React replaces it with the real bar. */
         const boot =
           `<div id="boot" aria-hidden="true"><div id="boot-img"></div>` +
           `<div id="boot-bar"><div>` +
           (mark ? `<img src="${mark}" alt="">` : `<span></span>`) +
-          `<nav id="boot-nav">${row}</nav>` +
-          `<span id="boot-burger">${MENU_LABEL}</span>` +
           `</div></div></div>`;
 
         const ROOT = '<div id="root"></div>';

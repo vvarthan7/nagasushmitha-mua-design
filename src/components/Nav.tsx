@@ -1,14 +1,5 @@
 import { useEffect, useState } from "react";
 import logo from "../assets/logo.webp";
-/* The entries themselves live next door, because index.html's boot bar draws
-   the same row before this component has loaded and reads them from there. See
-   nav.links.ts for why that is a module rather than a list in this file. */
-import {
-  LINKS,
-  ENQUIRE_LABEL,
-  MENU_LABEL,
-  type NavLink,
-} from "./nav.links";
 
 /* ── Class names ───────────────────────────────────────────────────────────
    The bar has two palettes and swaps between them wholesale, which is what
@@ -160,12 +151,6 @@ export default function Nav({ scrolled, homeHref = "" }: NavProps) {
   const resolve = (href: string) =>
     href.startsWith("#") ? `${homeHref}${href}` : href;
 
-  /* Home leads the row, and only away from home — on the home page it would be
-     a link to the page you are reading, which is noise in a bar this short. */
-  const links: NavLink[] = homeHref
-    ? [{ href: homeHref, label: "Home" }, ...LINKS]
-    : LINKS;
-
   // The dropdown only exists below 860px; a resize past that point would
   // otherwise leave it flagged open underneath the desktop bar.
   useEffect(() => {
@@ -191,9 +176,6 @@ export default function Nav({ scrolled, homeHref = "" }: NavProps) {
           className="flex shrink-0 items-center gap-2.5"
         >
           <img src={logo} alt="" className={LOGO} />
-          {/* <span className="font-serif text-[clamp(15px,2.4vw,20px)] whitespace-nowrap text-white italic [text-shadow:0_1px_2px_rgba(44,26,28,0.45),0_2px_12px_rgba(44,26,28,0.3)] transition-[color] duration-400 ease-brand group-data-[solid=true]:text-ink group-data-[solid=true]:[text-shadow:none]">
-            NS Makeup Artistry
-          </span> */}
         </a>
 
         {/* Only one of the two display utilities is ever on the element: below
@@ -202,23 +184,28 @@ export default function Nav({ scrolled, homeHref = "" }: NavProps) {
         <nav
           className={`${LINK_ROW} ${menuOpen ? "upto-859:flex" : "upto-859:hidden"}`}
         >
-          {links.map((l) =>
-            l.href ? (
-              <a key={l.label} href={resolve(l.href)} className={LINK}>
-                {l.label}
-              </a>
-            ) : (
-              <span key={l.label} className={LINK}>
-                {l.label}
-              </span>
-            ),
+          {/* Home leads the row, and only away from home — on the home page
+              it would be a link to the page you are reading, which is noise
+              in a bar this short. */}
+          {homeHref && (
+            <a href={homeHref} className={LINK}>
+              Home
+            </a>
           )}
-          {/* Not resolved either: every page that shows this bar also renders
-              <Enquire>, so the form is always in the current document and
-              sending this to the home page would be a needless page load. A
-              page that drops <Enquire> has to pass its href through resolve. */}
+          <a href={resolve("#about")} className={LINK}>
+            About
+          </a>
+          <a href={resolve("#services")} className={LINK}>
+            Services
+          </a>
+          <a href="./gallery.html" className={LINK}>
+            Gallery
+          </a>
+          <a href="./blog.html" className={LINK}>
+            Blog
+          </a>
           <a href="#enquire" className={ENQUIRE}>
-            {ENQUIRE_LABEL}
+            Enquire
           </a>
         </nav>
 
@@ -229,7 +216,7 @@ export default function Nav({ scrolled, homeHref = "" }: NavProps) {
           onClick={() => setMenuOpen((v) => !v)}
         >
           <span className="font-sans text-[10px] font-semibold tracking-[0.16em] uppercase">
-            {menuOpen ? "Close" : MENU_LABEL}
+            {menuOpen ? "Close" : "Menu"}
           </span>
         </button>
       </div>

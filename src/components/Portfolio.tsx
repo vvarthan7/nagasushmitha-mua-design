@@ -66,8 +66,8 @@ const FRAME = [
   "md:group-hover:-translate-y-3",
 ].join(" ");
 
-/* Layer 60, alongside Lightbox — above the nav (30) and the WhatsApp button
-   (40). `fixed` rather than `absolute`: the viewer has to cover the viewport,
+/* Layer 60, alongside the gallery strip's viewer — above the nav (30) and the
+   WhatsApp button (40). `fixed` rather than `absolute`: the viewer has to cover the viewport,
    and this component is a full page of scrolling tiles, so an absolutely
    positioned overlay would be pinned to the top of the grid and open off
    screen for anything below the fold. */

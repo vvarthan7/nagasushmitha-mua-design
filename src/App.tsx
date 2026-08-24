@@ -93,14 +93,12 @@ function usePrefetchOnIdle(loaders: (() => Promise<unknown>)[]): void {
 }
 
 interface AppProps {
-  showAcademy?: boolean;
   showInstagram?: boolean;
   /** Which set the gallery opens on. */
   defaultFilter?: GalleryCategory;
 }
 
 export default function App({
-  showAcademy = true,
   showInstagram = true,
   defaultFilter = "Bridal",
 }: AppProps) {
@@ -135,8 +133,6 @@ export default function App({
       <Deferred minHeight={620} className="bg-blush-soft">
         <LazyBeforeAfter />
       </Deferred>
-
-      {/* {showAcademy && <Academy />} */}
 
       <Deferred minHeight={480}>
         <LazyTestimonials />

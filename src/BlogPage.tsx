@@ -22,7 +22,8 @@ import { postBySlug } from "./components/content";
    bar's transparent palette exists for the home page's photographic banner to
    show through, and there is no banner here — the first thing under the bar is
    white page, where white type does not read. The FAB still takes the real
-   scroll state, being a scroll-triggered element on every page. */
+   scroll state on desktop; on mobile it shows itself on load regardless, per
+   WhatsAppFab's own useIsMobile check. */
 export default function BlogPage() {
   const scrolled = useScrolled(40);
 

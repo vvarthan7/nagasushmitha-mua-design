@@ -155,16 +155,14 @@ const BOOK = [
 /* Outlined rather than filled on desktop — two solid pills side by side read
    as one block, and this is the lighter of the two actions there.
 
-   Below 860 it is the only action left, so it takes the full width and the
-   white fill Book your date had above: a lone outlined pill reads as secondary
-   with nothing left to be secondary to. hover:text-white pins the colour
-   against the base-layer a:hover rule, same as WhatsAppFab. */
+   Hidden below 860 rather than promoted to full width: WhatsAppFab now shows
+   itself on load on mobile, so the strip would otherwise be offering the same
+   action twice on a phone. */
 const WHATSAPP = [
   ACTION,
   "border border-white/55 text-white",
   "hover:border-white hover:bg-white/16 hover:text-white",
-  "upto-860:w-full upto-860:border-transparent upto-860:bg-white",
-  "upto-860:text-plum upto-860:hover:bg-blush upto-860:hover:text-plum",
+  "upto-860:hidden",
 ].join(" ");
 
 interface HeroReelProps {

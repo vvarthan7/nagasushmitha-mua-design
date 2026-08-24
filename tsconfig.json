@@ -22,11 +22,14 @@
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
 
-    /* `noUnusedLocals` / `noUnusedParameters` are deliberately left off. Hero,
-       Academy and the `showAcademy` flag are parked behind commented-out JSX in
-       App.tsx; those flags would turn parked work into build errors. */
+    /* On, now that the parked work these were held off for — Hero, Academy,
+       Lightbox and the `showAcademy` flag — has been deleted rather than left
+       commented out. `npm run build` type-checks first, so an import or a local
+       that stops being read fails the build instead of accumulating. */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "include": ["src", "functions", "worker", "vite.config.ts"]
 }

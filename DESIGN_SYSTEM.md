@@ -80,8 +80,7 @@ text tokens inside a dark band — contrast is set by this group.
 | `on-dark-strong` | `#f0d9d3` | Links and emphasised copy on ink |
 | `footer-text` | `#9c807d` | Footer meta |
 | `footer-border` | `#3f2529` | Footer rule |
-| `academy-text` | `#f0cfc5` | Academy body copy |
-| `academy-border` | `#b07a80` | Academy outlines |
+| `academy-border` | `#b07a80` | Ghost-button and viewer outlines on ink |
 
 ### Pairing rules
 
@@ -268,7 +267,7 @@ between them).
 | `z-30` | Fixed nav |
 | --- | --- |
 | `z-40` | WhatsApp FAB, controls inside an overlay |
-| `z-60` | Full-screen overlays (Lightbox, gallery viewer) |
+| `z-60` | Full-screen overlays (the gallery-strip and portfolio viewers) |
 
 ---
 

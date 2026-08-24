@@ -114,7 +114,8 @@ const ARROW = [
 
 /* ── Viewer overlay ───────────────────────────────────────────────────────
    The same ring on a dark ground, portalled to <body>. Layer 60, alongside
-   Lightbox — above the nav (30) and the WhatsApp button (40). */
+   the portfolio grid's viewer — above the nav (30) and the WhatsApp button
+   (40). */
 
 const SCRIM = [
   "fixed inset-0 z-60 flex animate-scrim-in items-center justify-center",
@@ -223,7 +224,7 @@ export default function GalleryStrip({
   eyebrow = "Gallery",
   heading = "Look by",
   headingAccent = "look",
-  lead = "Bridal chairs, art shoots, prosthetics — the range, as it was shot.",
+  lead = "Every face a different story — a few of them, as they were shot.",
   ctaLabel = "View more",
   ctaHref = GALLERY_HREF,
 }: GalleryStripProps) {
@@ -245,7 +246,8 @@ export default function GalleryStrip({
   /* Sets travel the way the row reads: Editorial sits right of Bridal, so it
      pushes in from the right and Bridal leaves to the left. */
   const dir =
-    leaving && categories.indexOf(category) < categories.indexOf(leaving.category)
+    leaving &&
+    categories.indexOf(category) < categories.indexOf(leaving.category)
       ? -1
       : 1;
 
@@ -263,8 +265,14 @@ export default function GalleryStrip({
   }, [leaving]);
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
-    if (e.key === "ArrowRight") { e.preventDefault(); step(1); }
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      step(-1);
+    }
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      step(1);
+    }
   };
 
   return (
@@ -329,10 +337,20 @@ export default function GalleryStrip({
       </div>
 
       <div className="flex justify-center gap-3">
-        <button type="button" className={ARROW} aria-label="Previous look" onClick={() => step(-1)}>
+        <button
+          type="button"
+          className={ARROW}
+          aria-label="Previous look"
+          onClick={() => step(-1)}
+        >
           ←
         </button>
-        <button type="button" className={ARROW} aria-label="Next look" onClick={() => step(1)}>
+        <button
+          type="button"
+          className={ARROW}
+          aria-label="Next look"
+          onClick={() => step(1)}
+        >
           →
         </button>
       </div>
@@ -372,7 +390,15 @@ interface RingProps {
  * Because RING is a multiple of the set length, any five neighbouring slots
  * are five different photos — nothing repeats on screen.
  */
-function Ring({ category, index, dir = 1, exiting = false, onStep, onOpen, sides = SIDES }: RingProps) {
+function Ring({
+  category,
+  index,
+  dir = 1,
+  exiting = false,
+  onStep,
+  onOpen,
+  sides = SIDES,
+}: RingProps) {
   const shots = useMemo(() => categoryShots(category), [category]);
 
   const n = shots.length;
@@ -469,9 +495,16 @@ interface ViewerProps {
  * straight to a photo, and the CTA leaves for the full gallery.
  *
  * Portalled to <body> so no ancestor's stacking or clipping can catch it, and
- * it sits on the same overlay layer as Lightbox (z-index 60).
+ * it sits on the same overlay layer as the portfolio grid's viewer (z-index
+ * 60).
  */
-function Viewer({ category, startAt = 0, onClose, ctaLabel = "View all", ctaHref = GALLERY_HREF }: ViewerProps) {
+function Viewer({
+  category,
+  startAt = 0,
+  onClose,
+  ctaLabel = "View all",
+  ctaHref = GALLERY_HREF,
+}: ViewerProps) {
   const [index, setIndex] = useState(startAt);
   const stageRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -497,8 +530,14 @@ function Viewer({ category, startAt = 0, onClose, ctaLabel = "View all", ctaHref
   useEffect(() => {
     const onKey = (e: globalThis.KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
-      if (e.key === "ArrowRight") { e.preventDefault(); step(1); }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        step(-1);
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        step(1);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -508,7 +547,9 @@ function Viewer({ category, startAt = 0, onClose, ctaLabel = "View all", ctaHref
   useEffect(() => {
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previous; };
+    return () => {
+      document.body.style.overflow = previous;
+    };
   }, []);
 
   /* Move focus in, so the reader announces the dialog rather than reading on
@@ -538,7 +579,12 @@ function Viewer({ category, startAt = 0, onClose, ctaLabel = "View all", ctaHref
         /* The scrim closes on click; inside the panel it must not. */
         onClick={(e) => e.stopPropagation()}
       >
-        <button type="button" className={CLOSE} aria-label="Close gallery" onClick={onClose}>
+        <button
+          type="button"
+          className={CLOSE}
+          aria-label="Close gallery"
+          onClick={onClose}
+        >
           ×
         </button>
 

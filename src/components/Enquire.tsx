@@ -458,7 +458,7 @@ export default function Enquire() {
       <footer className="border-t border-footer-border">
         <div className="mx-auto flex max-w-shell flex-wrap items-center justify-between gap-3 px-gutter py-6 font-sans text-[10px] tracking-[0.14em] text-footer-text uppercase">
           <span>© 2026 Naga Sushmitha</span>
-          <span>Bridal · Editorial · Academy — Bangalore</span>
+          <span>Bridal · Editorial — Bangalore</span>
         </div>
       </footer>
     </section>

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { WHATSAPP_URL } from "../data";
 
 /* hover:text-white pins the colour — without it the base-layer a:hover rule
@@ -10,21 +11,46 @@ const FAB = [
   "transition-all duration-450 ease-brand",
 ].join(" ");
 
+/* Same 860px cutoff HeroReel and Enquire switch their layouts on. */
+const MOBILE_QUERY = "(max-width: 860px)";
+
+/* HeroReel drops its own WhatsApp CTA below 860px, so the FAB is the only
+   affordance to it on a phone — it has to be there on load rather than
+   waiting on the scroll-past-40px threshold `visible` otherwise gates it on. */
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(MOBILE_QUERY).matches,
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia(MOBILE_QUERY);
+    const onChange = () => setIsMobile(mql.matches);
+    onChange();
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  return isMobile;
+}
+
 interface WhatsAppFabProps {
   visible: boolean;
 }
 
 export default function WhatsAppFab({ visible }: WhatsAppFabProps) {
+  const isMobile = useIsMobile();
+  const shown = visible || isMobile;
+
   return (
     <a
       href={WHATSAPP_URL}
       className={`${FAB} ${
-        visible
+        shown
           ? "pointer-events-auto translate-y-0 opacity-100"
           : "pointer-events-none translate-y-4 opacity-0"
       }`}
-      tabIndex={visible ? 0 : -1}
-      aria-hidden={!visible}
+      tabIndex={shown ? 0 : -1}
+      aria-hidden={!shown}
       target="_blank"
       rel="noopener noreferrer"
     >

@@ -1,8 +1,6 @@
 /* Photos with a fixed role on the page, referenced by name below. */
 import bridal01 from "./assets/gallery/bridal-01.jpg";
-import bridal02 from "./assets/gallery/bridal-02.jpg";
 import bridal04 from "./assets/gallery/bridal-04.jpg";
-import editorial01 from "./assets/gallery/editorial-01.jpg";
 import nagasushmitha from "./assets/nagasushmitha/nagasushmitha.webp";
 import serviceBridal from "./assets/bridal/NS_Bridal_10.webp";
 import serviceEditorial from "./assets/editorial/NS_Editorial_5.webp";
@@ -171,7 +169,7 @@ export const WHATSAPP_URL = `https://wa.me/${whatsappNumber}`;
 export const INSTAGRAM_URL =
   "https://www.instagram.com/nagasushmithamakeupartist/";
 export const INSTAGRAM_HANDLE = "@nagasushmithamakeupartist";
-export const EMAIL = "hello@nagasushmitha.com";
+export const EMAIL = "contact@nsmakeupartistry.com";
 
 /* How many photos each strip filter carries, taken off the front of its
    folder by number: Bridal runs NS_Bridal_1 through _9, Editorial
@@ -210,7 +208,6 @@ export const galleryFilters: readonly GalleryCategory[] = [
 export const instagramPosts: GalleryShot[] = gallery.slice(0, 8);
 
 export const aboutImage = nagasushmitha;
-export const academyImage = editorial01;
 export const beforeImage = bridal04;
 export const afterImage = bridal01;
 

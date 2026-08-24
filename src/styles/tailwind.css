@@ -37,8 +37,10 @@
      would cost the instant recognition that is the whole point of using it. */
   --color-whatsapp: #25d366;
 
-  /* ── Dark sections (academy, enquire, footer) ──────────────────────── */
-  --color-academy-text: #f0cfc5;
+  /* ── Dark sections (enquire, footer, the two photo viewers) ────────────
+     `academy-border` keeps its name from the section it was introduced for;
+     that section is gone and the token is now the outline colour the viewer
+     overlays share with the form's ghost buttons. */
   --color-academy-border: #b07a80;
   --color-field: #3a2124;
   --color-field-border: #4a2e31;

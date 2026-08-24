@@ -12,7 +12,8 @@ import WhatsAppFab from "./components/WhatsAppFab";
    starts transparent because there is a photographic banner behind it to show
    through; here the first thing under the bar is the blush background, and
    white type on blush does not read. The FAB still takes the real scroll
-   state — it is a scroll-triggered element on both pages. */
+   state on desktop; on mobile it shows itself on load regardless, per
+   WhatsAppFab's own useIsMobile check. */
 export default function GalleryPage() {
   const scrolled = useScrolled(40);
 
