@@ -108,6 +108,32 @@ export default defineConfig(({ mode }) => {
      the key cannot reach the browser bundle. */
   Object.assign(process.env, loadEnv(mode, process.cwd(), ""));
 
+  /* Fail the build rather than the page.
+   *
+   * src/data.ts throws when this is missing, which is the right instinct —
+   * a dead WhatsApp link on a site whose visitors are told to use it would be
+   * worse than an error. But it throws at *module load*, in the browser, so a
+   * missing value ships: the build goes green, the deploy succeeds, every
+   * status code is 200, and the site renders a blank page because React never
+   * mounts. That is a genuinely hard failure to read from the outside, and it
+   * has already cost a deploy.
+   *
+   * Checked here instead, where the value is actually read. Vite inlines this
+   * at build time, so the build environment is the only place it can come
+   * from — which is also why setting it on Cloudflare's runtime "Variables and
+   * Secrets" screen does nothing at all. It has to be a Build variable. */
+  if (!process.env.VITE_WHATSAPP_NUMBER?.replace(/\D/g, "")) {
+    throw new Error(
+      "VITE_WHATSAPP_NUMBER is missing or has no digits, so the built site " +
+        "would throw on load and render blank.\n" +
+        "  local:      copy .env.example to .env.local and fill it in\n" +
+        "  Cloudflare: Worker → Settings → Build → variables (NOT the runtime\n" +
+        "              Variables and Secrets screen — Vite cannot see that one),\n" +
+        "              then re-run the build; saving a variable alone does not\n" +
+        "              rebuild the assets.",
+    );
+  }
+
   return {
     plugins: [react(), tailwindcss(), enquiryApi()],
 

@@ -42,6 +42,10 @@ interface Env {
   /* The version_metadata binding: which upload of this script is answering.
      Optional because the dev server has no such thing to provide. */
   CF_VERSION_METADATA?: { id: string; tag?: string; timestamp?: string };
+
+  /* Should never exist. Declared so /api/health can notice when it does — see
+     `viteVarAtRuntime` there. */
+  VITE_WHATSAPP_NUMBER?: string;
 }
 
 /* Mirrors src/data.ts, which cannot be imported here: it imports .webp files,
@@ -146,6 +150,16 @@ function health(env: Env, preview: boolean, hostname: string): Response {
           to: Boolean(env.ENQUIRY_TO),
           from: env.ENQUIRY_FROM ?? "(unset — handler will use its default)",
         },
+
+        /* True means VITE_WHATSAPP_NUMBER was set on the *runtime* Variables
+           and Secrets screen. That screen is the wrong one: Vite reads the
+           environment during `npm run build` and inlines the value into the
+           JavaScript, so a variable that only exists at request time is
+           invisible to it. The bundle keeps the empty string it was compiled
+           with, src/data.ts throws on load, and the page renders blank while
+           every dashboard screen looks correctly filled in.
+           The value belongs under Settings → Build. */
+        viteVarAtRuntime: Boolean(env.VITE_WHATSAPP_NUMBER),
       },
       null,
       2,
