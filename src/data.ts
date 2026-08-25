@@ -238,7 +238,7 @@ export const faqs: FaqItem[] = [
 export const testimonials: Testimonial[] = [
   {
     testimonial:
-      "She did the makeover for my wedding. It was really comfortable working with her. She has a very friendly nature, and I would highly recommend her for makeup, hairstyling, and costume designing. She has a great sense of the latest fashion styles. It was truly awesome, and I looked beautiful in all my wedding attires. I received compliments from all my relatives, friends, and family members.",
+      "She did the makeover for my wedding. It was really comfortable working with her. She has a very friendly nature, and I would highly recommend her for makeup, hairstyling, and costume designing. She has a great sense of the latest fashion. It was truly awesome, and I looked beautiful in all my wedding attires. I received compliments from all my relatives, friends, and family members.",
     name: "Deepika Suresh",
     meta: "Bride",
   },
@@ -250,7 +250,7 @@ export const testimonials: Testimonial[] = [
   },
   {
     testimonial:
-      "You’re an amazing artist. Truly, it’s not just your hands, but your soul that creates pure magic. And obviously, it showed.",
+      "You're an amazing artist. Truly, it's not just your hands, but your soul that creates pure magic. And obviously, it showed.",
     name: "Dr.Ranjana",
     meta: "Bride",
   },
@@ -262,8 +262,8 @@ export const testimonials: Testimonial[] = [
   },
   {
     testimonial:
-      "Makeup was lit! 🔥 Literally, I received so many compliments! Thank you so much for such amazing makeup on my best day.”",
-    name: "Navya Vishwesh,",
+      "Makeup was lit! 🔥 Literally, I received so many compliments! Thank you so much for such amazing makeup on my best day.",
+    name: "Navya Vishwesh",
     meta: "Bride",
   },
   {
