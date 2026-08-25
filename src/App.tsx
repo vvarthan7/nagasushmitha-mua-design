@@ -4,7 +4,6 @@ import HeroReel from "./components/HeroReel";
 import Services from "./components/Services";
 import BookingSteps from "./components/BookingSteps";
 import GalleryStrip from "./components/GalleryStrip";
-import BeforeAfter from "./components/BeforeAfter";
 import Testimonials from "./components/Testimonials";
 import Faq from "./components/Faq";
 import InstagramFeed from "./components/InstagramFeed";
