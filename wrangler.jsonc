@@ -3,7 +3,7 @@
   // `wrangler deploy` from running framework auto-detection — that path tries
   // to wire in @cloudflare/vite-plugin, which needs Vite 6+, and fails the
   // build on Vite 5 before anything is compiled.
-  "name": "nagasushmitha-mua-design",
+  "name": "nsmakeupartistry",
   "main": "worker/index.ts",
   "compatibility_date": "2026-08-01",
 
