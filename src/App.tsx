@@ -27,7 +27,7 @@ export function App() {
       <Services />
       <BookingSteps />
       <GalleryStrip defaultCategory={defaultCategory} />
-      <BeforeAfter />
+      {/* <BeforeAfter /> */}
       <Testimonials />
       <Faq />
       <InstagramFeed />
