@@ -10,8 +10,7 @@
     "typecheck": "tsc --noEmit",
     "blur": "node scripts/generate-blur.mjs",
     "images": "node scripts/optimize-images.mjs",
-    "deploy": "npm run build && wrangler deploy --env=\"\"",
-    "deploy:preview": "npm run build && wrangler deploy --env preview"
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "react": "^18.3.1",

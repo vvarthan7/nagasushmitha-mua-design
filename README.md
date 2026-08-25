@@ -152,39 +152,64 @@ back.
 Nothing is built or deployed from your machine. Cloudflare clones the repo, runs
 the build itself, and publishes the result.
 
-#### Before launch: the domain is deliberately shut
+#### Before launch: the domain is shut, the preview URLs are not
 
-The site has a launch date, and until it arrives `nsmakeupartistry.com` serves
+The site has a launch date. Until it arrives, `nsmakeupartistry.com` serves
 [worker/holding.ts](worker/holding.ts) — a single self-contained page with the
 WhatsApp, Instagram and email links on it — and nothing else. No markup, no
-images, no bundle. Review happens on the preview Worker instead.
+images, no bundle.
 
-Two settings hold that in place, and they are one mechanism rather than two:
+The same deployment serves the **whole site** on its workers.dev addresses, and
+that is how it gets reviewed:
 
-| Setting                         | Where                            | Why                                                                       |
-| ------------------------------- | -------------------------------- | ------------------------------------------------------------------------- |
-| `vars.LAUNCHED: false`          | [wrangler.jsonc](wrangler.jsonc) | The switch itself                                                          |
-| `assets.run_worker_first: true` | [wrangler.jsonc](wrangler.jsonc) | Without it the Worker never sees a page request, so the switch never runs |
+| Address                                                  | Serves            |
+| -------------------------------------------------------- | ----------------- |
+| `nsmakeupartistry.com`                                    | holding page      |
+| `nsmakeupartistry.<subdomain>.workers.dev`                | the full site     |
+| `<version>-nsmakeupartistry.<subdomain>.workers.dev`      | that one version  |
+
+One Worker, one build, three addresses. What you review on workers.dev is
+byte-for-byte what the domain will serve at launch, because it *is* the same
+deployment — there is no second environment that can drift out of step, and
+nothing to promote.
+
+Three settings hold it together:
+
+| Setting                         | Where                            | Why                                                                        |
+| ------------------------------- | -------------------------------- | -------------------------------------------------------------------------- |
+| `vars.LAUNCHED: false`          | [wrangler.jsonc](wrangler.jsonc) | The switch                                                                  |
+| `assets.run_worker_first: true` | [wrangler.jsonc](wrangler.jsonc) | Without it the Worker never sees a page request, so the switch never runs   |
+| `workers_dev: true`             | [wrangler.jsonc](wrangler.jsonc) | The preview addresses. Turning it off takes them down                       |
 
 Cloudflare normally answers asset requests at the edge without invoking the
-Worker at all — which is what makes the three pages free to serve, and which
-would also make a gate inside the Worker completely ineffective. `dist/` carries
-every photograph under a name that is guessable from an old crawl, so a gate
-that only covered `index.html` would not be a gate.
+Worker at all — which is what makes the pages free to serve, and which would
+also make a gate inside the Worker completely ineffective. `dist/` carries every
+photograph under a name guessable from an old crawl, so a gate covering only
+`index.html` would not be a gate.
 
-The APIs stay open. `/api/health` has to be, or there is no way to check the
-switch is set the way you think it is; `/api/enquiry` is deliberately reachable
-so the Resend path can be proven on the production Worker — with production's own
-key and addresses — before launch day rather than during it.
+The gate keys on the **hostname**, in [worker/index.ts](worker/index.ts):
+anything ending `.workers.dev` is a preview and gets the site; everything else
+gets the holding page until `LAUNCHED` is true. Preview responses carry
+`x-robots-tag: noindex, nofollow`, so the preview copy cannot be indexed ahead
+of the launch.
+
+> The workers.dev addresses are public to anyone who knows them. That is normal
+> for a preview URL and the noindex keeps them out of search, but they are not
+> access-controlled. Cloudflare Access can put a login in front of them if that
+> is ever wanted — the Domains tab offers it per URL.
+
+The APIs stay open on every address. `/api/health` has to be, or there is no way
+to check the switch is set the way you think it is; `/api/enquiry` is
+deliberately reachable so the Resend path can be proven before launch day rather
+than during it.
 
 **On launch day**, one commit to `main`:
 
 1. `wrangler.jsonc` → `"LAUNCHED": true`
-2. `wrangler.jsonc` → delete `"run_worker_first": true` from the top-level
-   `assets` block, so assets go back to being served at the edge for free.
-   Leave the one in `env.preview` alone.
+2. `wrangler.jsonc` → delete `"run_worker_first": true` from `assets`, so assets
+   go back to being served at the edge for free
 3. Optionally delete `WHATSAPP_NUMBER` from `vars` and
-   [worker/holding.ts](worker/holding.ts) with it.
+   [worker/holding.ts](worker/holding.ts) with it
 
 Then confirm, from a terminal rather than a browser tab:
 
@@ -192,24 +217,24 @@ Then confirm, from a terminal rather than a browser tab:
 curl -s https://nsmakeupartistry.com/api/health
 ```
 
-`launched` should read `true` and `version` should be new.
+`serving` should read `"the site"`.
 
-#### Two Workers, one repo
+#### How a branch becomes a preview URL
 
-| Branch    | Worker                     | URL                                                          |
-| --------- | -------------------------- | ------------------------------------------------------------ |
-| `main`    | `nsmakeupartistry`         | nsmakeupartistry.com — holding page until launch |
-| `preview` | `nsmakeupartistry-preview` | preview.nsmakeupartistry.com — staging           |
+| Branch        | What Cloudflare runs           | Result                                                    |
+| ------------- | ------------------------------ | --------------------------------------------------------- |
+| `main`        | `npx wrangler deploy`          | Deploys. The domain and the production workers.dev address |
+| anything else | `npx wrangler versions upload` | Uploads a version and prints its own preview URL           |
 
-They are separate Worker scripts, not two views of one, which is the point:
-staging can be broken without the domain noticing. The `preview` entry in
-[wrangler.jsonc](wrangler.jsonc)'s `env` block is what defines the second one,
-and pushing to the `preview` branch is what builds it.
+Both are the Cloudflare defaults; neither needs changing. The second one is the
+piece that is easy to miss — pushing to `preview` does **not** change what any
+existing address serves. It uploads a version and gives that version its own
+`<version>-nsmakeupartistry.<subdomain>.workers.dev` address, printed at the end
+of the build log and listed under the Worker's Deployments tab.
 
-The consequence to remember is that **secrets do not cross between them**.
-`RESEND_API_KEY` has to be added to each Worker once, separately. Everything
-else lives in `vars` and deploys itself.
-
+That is the safe way to look at a change: push to `preview`, open the URL from
+the build log, and production is untouched either way. Merging to `main` is what
+deploys it.
 #### Where each variable goes, and why it matters
 
 | Variable                     | Where it lives                                                   | When it is read                          |
@@ -282,33 +307,20 @@ and will show you that instead of anything Cloudflare is serving.
 Cloudflare dashboard → Workers & Pages → Create → Import a repository, pick this
 repo, then:
 
-| Setting                                | Value                               |
-| -------------------------------------- | ----------------------------------- |
-| Production branch                      | `main`                              |
-| Builds for non-production branches      | checked                             |
-| Build command                          | `npm run build`                     |
-| Deploy command                         | `npx wrangler deploy --env=""`      |
-| **Version command**                    | `npx wrangler deploy --env preview` |
+| Setting                            | Value                          |
+| ---------------------------------- | ------------------------------ |
+| Production branch                  | `main`                         |
+| Builds for non-production branches | checked                        |
+| Build command                      | `npm run build`                |
+| Deploy command                     | `npx wrangler deploy`          |
+| Version command                    | `npx wrangler versions upload` |
 
-The **Version command** is the one that catches people out. It is the command
-Cloudflare runs for every branch that is *not* the production branch, and it
-defaults to `npx wrangler versions upload` — which uploads a version and stops.
-Nothing is served, no domain is created, and the build goes green while staging
-never appears. Replacing it with a real deploy to `--env preview` is what makes
-pushing to `preview` produce a site.
-
-One consequence to know: that command runs for *every* non-production branch, so
-any branch pushed will overwrite staging. With two branches that is fine. If a
-third ever needs its own environment, point this at a script that reads
-`WORKERS_CI_BRANCH` and picks the `--env` to match.
-
-`--env=""` is not decoration. With more than one environment in the config,
-`wrangler deploy` on its own warns that no target was given; naming the
-top-level environment explicitly is what keeps the production deploy
-unambiguous, now and after a wrangler upgrade.
+Both are Cloudflare's defaults. Nothing here needs changing — the
+distinction between them is explained under "How a branch becomes a preview
+URL" above.
 
 Then add `VITE_WHATSAPP_NUMBER` under Build variables, and `RESEND_API_KEY` —
-encrypted — under Variables and Secrets, once per Worker.
+encrypted — under Variables and Secrets.
 
 #### Renaming the Worker
 

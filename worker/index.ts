@@ -62,8 +62,31 @@ const EMAIL = "contact@nsmakeupartistry.com";
  */
 const launched = (env: Env): boolean => String(env.LAUNCHED) === "true";
 
-/** Staging is a public URL. Whatever else it is, it must not be a second copy
- *  of the site in Google's index, competing with the real one at launch. */
+/**
+ * Whether this request arrived on a preview address rather than the real one.
+ *
+ * This is what lets one Worker be both things at once. The domain is the
+ * product; the workers.dev address that every Worker gets for free is where the
+ * same deployment can be looked at before the domain opens. Same code, same
+ * variables, same build — only the hostname differs, so what you review is
+ * exactly what launches, with no second environment to drift out of step.
+ *
+ * Every workers.dev address counts, which covers both of the ones Cloudflare
+ * hands out: the Worker's own `nsmakeupartistry.<subdomain>.workers.dev`, and
+ * the per-version `<version>-nsmakeupartistry.<subdomain>.workers.dev` that
+ * `wrangler versions upload` prints for a branch build. A version preview is
+ * the useful one — it renders a change without deploying it over production.
+ *
+ * The trade is worth stating plainly: the domain and the production workers.dev
+ * address are one deployment, so pushing to main moves both at once. Reviewing
+ * a change *before* it reaches the domain means pushing it to a branch and
+ * opening the version URL, not opening the production one.
+ */
+const isPreviewHost = (hostname: string): boolean =>
+  hostname.endsWith(".workers.dev");
+
+/** A preview address is still a public URL. Whatever else it is, it must not be
+ *  a second copy of the site in Google's index, competing with the real one. */
 function noindex(response: Response): Response {
   /* Rebuilt rather than mutated: responses returned by the ASSETS binding have
      immutable headers, and assigning to them throws. */
@@ -95,14 +118,26 @@ function noindex(response: Response): Response {
  * and it is the field most likely to be wrong in a way Resend refuses with a
  * 403 rather than a bounce.
  */
-function health(env: Env): Response {
+function health(env: Env, preview: boolean, hostname: string): Response {
   const version = env.CF_VERSION_METADATA;
 
   return new Response(
     JSON.stringify(
       {
         environment: env.ENVIRONMENT ?? "unknown",
+        /* The gate's actual input, echoed back. Whether a request counts as a
+           preview turns entirely on this string, so when the answer is
+           surprising this is the field that explains it. */
+        hostname,
+        /* Whether *this request* was treated as a preview, which is a property
+           of the hostname it arrived on rather than of the deployment. The
+           same version answers both ways, so asking the deployment would give
+           the wrong answer half the time. */
+        preview,
         launched: launched(env),
+        /* What a visitor to this address actually gets, stated outright — the
+           combination of the two flags above is the thing people get wrong. */
+        serving: preview || launched(env) ? "the site" : "holding page",
         version: version?.id ?? null,
         deployedAt: version?.timestamp ?? null,
         enquiry: {
@@ -129,7 +164,8 @@ function health(env: Env): Response {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const { pathname } = new URL(request.url);
+    const { pathname, hostname } = new URL(request.url);
+    const preview = isPreviewHost(hostname);
 
     /* Both API routes sit above the gate: it hides the *site*, not the
        endpoints. /api/health is how you check the gate is set the way you think
@@ -137,14 +173,18 @@ export default {
        with production's own key and addresses — before launch day rather than
        during it. Neither is linked from the holding page, and the enquiry
        handler is exactly as exposed here as it will be afterwards. */
-    if (pathname === "/api/health") return health(env);
+    if (pathname === "/api/health") return health(env, preview, hostname);
     if (pathname === "/api/enquiry") return onRequest({ request, env });
 
-    /* Before launch the domain serves one page and nothing else — no markup,
-       no images, no bundle. The gate sits above the assets rather than beside
-       them because a single un-gated path is enough to leak the whole site:
-       dist/ carries every photograph and every price, under names that are
-       guessable from a sitemap or an old crawl.
+    /* Before launch *the domain* serves one page and nothing else — no markup,
+       no images, no bundle. Preview addresses are exempt, which is the whole
+       mechanism: the site is reviewable on workers.dev while nsmakeupartistry.com
+       stays shut, without a second Worker or a second build to keep in step.
+
+       The gate sits above the assets rather than beside them because a single
+       un-gated path is enough to leak the whole site: dist/ carries every
+       photograph and every price, under names that are guessable from a sitemap
+       or an old crawl.
 
        This is only reached at all because `assets.run_worker_first` is set on
        production in wrangler.jsonc. Cloudflare otherwise answers asset
@@ -152,7 +192,7 @@ export default {
        would never run. The two settings are one mechanism; flipping LAUNCHED
        without also clearing run_worker_first leaves the site working but
        paying an invocation per request. */
-    if (!launched(env)) {
+    if (!launched(env) && !preview) {
       return holdingPage({
         instagram: INSTAGRAM_URL,
         instagramHandle: INSTAGRAM_HANDLE,
@@ -167,6 +207,6 @@ export default {
        running first, in which case every asset comes through here too. */
     const response = await env.ASSETS.fetch(request);
 
-    return env.ENVIRONMENT === "preview" ? noindex(response) : response;
+    return preview ? noindex(response) : response;
   },
 };

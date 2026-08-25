@@ -89,11 +89,16 @@
     "enabled": true
   },
 
-  // Off. Before launch there is no reason for a second public address, and
-  // afterwards the domain is the address — one site, one URL, and nothing for
-  // Google to treat as a duplicate. Review happens on the preview Worker
-  // below, which is what its own domain is for.
-  "workers_dev": false,
+  // On, and load-bearing. This Worker's two workers.dev addresses are the
+  // preview mechanism:
+  //
+  //   nsmakeupartistry.morning-snowflake-3ec9.workers.dev    what main deploys
+  //   <version>-nsmakeupartistry.morning-snowflake-3ec9...   one per version
+  //
+  // Both end in .workers.dev, which is what worker/index.ts keys the gate on:
+  // the domain stays shut while either of these serves the full site. Turning
+  // this off would take the preview URLs down with it.
+  "workers_dev": true,
 
   // The custom domain, declared here rather than clicked into the dashboard,
   // so that deploying is what attaches it and the binding between Worker and
@@ -108,76 +113,5 @@
   // www is deliberately absent. Pointing it here too would serve the site on
   // two hostnames and hand Google a duplicate; it wants a Redirect Rule to the
   // apex instead. See README.
-  "routes": [{ "pattern": "nsmakeupartistry.com", "custom_domain": true }],
-
-  // ── Staging ────────────────────────────────────────────────────────────
-  // A second, independent Worker built from the same repo, so the preview
-  // branch can be reviewed on a real URL while the domain stays shut. This is
-  // the URL to send round before launch:
-  //
-  //     https://nsmakeupartistry-preview.<subdomain>.workers.dev
-  //
-  // LAUNCHED is true here — staging shows the real site, which is the entire
-  // point of having it. Its noindex header comes from worker/index.ts, keyed
-  // on ENVIRONMENT, so the staging copy cannot be indexed and cannot surface
-  // ahead of the launch.
-  //
-  // Named environments do not inherit bindings: `vars`, `version_metadata` and
-  // `assets` are re-declared on purpose, and dropping any of them would leave
-  // staging running a subtly different Worker from production, which defeats
-  // the point of having it.
-  //
-  // RESEND_API_KEY is *not* shared: secrets are per-Worker, so staging needs
-  // its own copy adding once.
-  "env": {
-    "preview": {
-      "name": "nsmakeupartistry-preview",
-
-      // Kept on as a fallback address. The custom domain below is the one to
-      // share, but it depends on DNS and a certificate; workers.dev works the
-      // moment the first build finishes, which is what you want when the
-      // question is "did my push deploy?"
-      "workers_dev": true,
-
-      "routes": [
-        { "pattern": "preview.nsmakeupartistry.com", "custom_domain": true }
-      ],
-
-      "assets": {
-        "directory": "./dist",
-        "binding": "ASSETS",
-        // Needed here for the noindex header, for the same reason production
-        // needs it for the gate: without it the Worker never sees a page
-        // request. Staging keeps it after launch — a handful of invocations
-        // is the price of staying out of the index.
-        "run_worker_first": true
-      },
-
-      "vars": {
-        "ENVIRONMENT": "preview",
-
-        // True, so staging shows the real site. Flip it to false here — and
-        // only here — to review the holding page itself before it goes on the
-        // domain; WHATSAPP_NUMBER below is what makes that review accurate
-        // rather than a version with one button missing.
-        "LAUNCHED": true,
-        "WHATSAPP_NUMBER": "919380758632",
-
-        // Staging sends real email through the same Resend account. Pointed at
-        // the same inbox deliberately — a test that lands somewhere nobody
-        // reads is not a test — so expect enquiries from staging to look
-        // identical to live ones apart from the sender's display name.
-        "ENQUIRY_TO": "contact@nsmakeupartistry.com",
-        "ENQUIRY_FROM": "Naga Sushmitha [staging] <onboarding@resend.dev>"
-      },
-
-      "version_metadata": {
-        "binding": "CF_VERSION_METADATA"
-      },
-
-      "observability": {
-        "enabled": true
-      }
-    }
-  }
+  "routes": [{ "pattern": "nsmakeupartistry.com", "custom_domain": true }]
 }
