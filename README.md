@@ -282,12 +282,25 @@ and will show you that instead of anything Cloudflare is serving.
 Cloudflare dashboard → Workers & Pages → Create → Import a repository, pick this
 repo, then:
 
-| Setting                              | Value                               |
-| ------------------------------------ | ----------------------------------- |
-| Production branch                    | `main`                              |
-| Build command                        | `npm run build`                     |
-| Deploy command                       | `npx wrangler deploy --env=""`      |
-| Non-production branch deploy command | `npx wrangler deploy --env preview` |
+| Setting                                | Value                               |
+| -------------------------------------- | ----------------------------------- |
+| Production branch                      | `main`                              |
+| Builds for non-production branches      | checked                             |
+| Build command                          | `npm run build`                     |
+| Deploy command                         | `npx wrangler deploy --env=""`      |
+| **Version command**                    | `npx wrangler deploy --env preview` |
+
+The **Version command** is the one that catches people out. It is the command
+Cloudflare runs for every branch that is *not* the production branch, and it
+defaults to `npx wrangler versions upload` — which uploads a version and stops.
+Nothing is served, no domain is created, and the build goes green while staging
+never appears. Replacing it with a real deploy to `--env preview` is what makes
+pushing to `preview` produce a site.
+
+One consequence to know: that command runs for *every* non-production branch, so
+any branch pushed will overwrite staging. With two branches that is fine. If a
+third ever needs its own environment, point this at a script that reads
+`WORKERS_CI_BRANCH` and picks the `--env` to match.
 
 `--env=""` is not decoration. With more than one environment in the config,
 `wrangler deploy` on its own warns that no target was given; naming the
