@@ -92,8 +92,23 @@
   // Off. Before launch there is no reason for a second public address, and
   // afterwards the domain is the address — one site, one URL, and nothing for
   // Google to treat as a duplicate. Review happens on the preview Worker
-  // below, which is what its workers.dev URL is for.
+  // below, which is what its own domain is for.
   "workers_dev": false,
+
+  // The custom domain, declared here rather than clicked into the dashboard,
+  // so that deploying is what attaches it and the binding between Worker and
+  // domain is reviewable in the same file as everything else.
+  //
+  // `custom_domain: true` is what makes Cloudflare create the DNS record and
+  // issue the certificate; a plain route would expect the record to already
+  // exist. Detaching a custom domain in the dashboard *deletes* that record —
+  // the apex stops resolving entirely, which looks far more broken than a
+  // holding page — so re-attaching is a deploy, not a dashboard visit.
+  //
+  // www is deliberately absent. Pointing it here too would serve the site on
+  // two hostnames and hand Google a duplicate; it wants a Redirect Rule to the
+  // apex instead. See README.
+  "routes": [{ "pattern": "nsmakeupartistry.com", "custom_domain": true }],
 
   // ── Staging ────────────────────────────────────────────────────────────
   // A second, independent Worker built from the same repo, so the preview
@@ -117,7 +132,16 @@
   "env": {
     "preview": {
       "name": "nsmakeupartistry-preview",
+
+      // Kept on as a fallback address. The custom domain below is the one to
+      // share, but it depends on DNS and a certificate; workers.dev works the
+      // moment the first build finishes, which is what you want when the
+      // question is "did my push deploy?"
       "workers_dev": true,
+
+      "routes": [
+        { "pattern": "preview.nsmakeupartistry.com", "custom_domain": true }
+      ],
 
       "assets": {
         "directory": "./dist",

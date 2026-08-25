@@ -198,8 +198,8 @@ curl -s https://nsmakeupartistry.com/api/health
 
 | Branch    | Worker                     | URL                                                          |
 | --------- | -------------------------- | ------------------------------------------------------------ |
-| `main`    | `nsmakeupartistry`         | nsmakeupartistry.com — holding page until launch              |
-| `preview` | `nsmakeupartistry-preview` | `nsmakeupartistry-preview.<subdomain>.workers.dev` — staging  |
+| `main`    | `nsmakeupartistry`         | nsmakeupartistry.com — holding page until launch |
+| `preview` | `nsmakeupartistry-preview` | preview.nsmakeupartistry.com — staging           |
 
 They are separate Worker scripts, not two views of one, which is the point:
 staging can be broken without the domain noticing. The `preview` entry in
@@ -323,11 +323,16 @@ carelessly. Read this before touching the registrar.
 
 **Point the domain at the Worker.** An apex domain (`nsmakeupartistry.com`)
 cannot be a CNAME, so it needs Cloudflare running DNS: add the site to
-Cloudflare, then change the nameservers at your registrar. Only a `www`
-subdomain could stay where it is, on a CNAME to
-`<name>.<subdomain>.workers.dev`. Either way the domain is attached under the
-Worker's Settings → Domains & Routes — as a Custom Domain, not a Route, so
-Cloudflare issues the certificate and writes the DNS record itself.
+Cloudflare, then change the nameservers at your registrar.
+
+Both domains are then declared in [wrangler.jsonc](wrangler.jsonc) under
+`routes`, with `custom_domain: true` — deploying is what attaches them, issues
+the certificate and writes the DNS record. There is nothing to click.
+
+> **Detaching a custom domain in the dashboard deletes its DNS record.** The
+> apex stops resolving altogether — not a holding page, not an error page,
+> nothing — and every check you run reports "could not resolve host". Re-attach
+> by deploying, not by hand.
 
 > **Check the MX records before you flip the nameservers.** Moving DNS to
 > Cloudflare moves *all* of it, Google Workspace's mail routing included.
