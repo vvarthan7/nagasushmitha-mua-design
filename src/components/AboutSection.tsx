@@ -1,4 +1,4 @@
-export const PORTRAIT = "src/assets/nagasushmitha.webp";
+export const PORTRAIT = "./assets/nagasushmitha.webp";
 
 interface Beat {
   label: string;
