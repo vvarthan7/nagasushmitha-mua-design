@@ -1,4 +1,11 @@
-export const PORTRAIT = "./assets/nagasushmitha.webp";
+/* Imported, not written as a "./assets/..." string. Vite only fingerprints an
+   asset it can see at build time, so as a bare path this shipped nothing to
+   dist/ and resolved against whatever URL the page was served from — which is
+   the 404 on Cloudflare. Every other photo on the site is imported for the
+   same reason; see the note above the heroes in components/content.ts. */
+import portrait from "../assets/nagasushmitha.webp";
+
+export const PORTRAIT = portrait;
 
 interface Beat {
   label: string;

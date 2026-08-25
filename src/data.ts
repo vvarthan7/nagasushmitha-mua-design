@@ -1,9 +1,6 @@
 /* Photos with a fixed role on the page, referenced by name below. */
 import bridal01 from "./assets/gallery/bridal-01.jpg";
 import bridal04 from "./assets/gallery/bridal-04.jpg";
-import serviceBridal from "./assets/bridal/NS_Bridal_10.webp";
-import serviceEditorial from "./assets/editorial/NS_Editorial_5.webp";
-import servicePersonal from "./assets/party/NS_Party_1.webp";
 /* The portfolio grid's photos are not imported here. They go through
    `photo()` below, which resolves a path to both the image and its blur
    placeholder at once — see the note there for why the two cannot be named
@@ -14,7 +11,6 @@ import type {
   FaqItem,
   GalleryCategory,
   GalleryShot,
-  Service,
   Testimonial,
   Work,
   WorkCategory,
@@ -217,30 +213,6 @@ export const bookingSteps: BookingStep[] = [
     n: "03",
     title: "The big day",
     body: "I arrive early with a written timetable. You just relax.",
-  },
-];
-
-export const services: Service[] = [
-  {
-    name: "Bridal",
-    title: "Bridal makeup & hair",
-    body: "Luxury bridal makeup that enhances, not hides, your natural beauty. Thoughtfully crafted for weddings, every bridal experience includes a personalised trial, wedding-day planning, and premium products that look flawless in both natural light and photography.",
-    pills: ["Trial included", "Premium products", "All occasions"],
-    image: serviceBridal,
-  },
-  {
-    name: "Editorial",
-    title: "Editorial & portfolio",
-    body: "Portfolio shoots, campaigns and film. Looks designed for flash, for continuity across a long shoot day, and for retouch-light delivery.",
-    pills: ["On location", "Studio flash", "Continuity"],
-    image: serviceEditorial,
-  },
-  {
-    name: "Personal",
-    title: "Personal makeup course",
-    body: "A private session for your own face — what suits your features, what to own, what to skip.",
-    pills: ["One to one", "2 sessions", "Product list"],
-    image: servicePersonal,
   },
 ];
 

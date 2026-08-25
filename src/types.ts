@@ -91,15 +91,6 @@ export interface BookingStep {
   body: string;
 }
 
-export interface Service {
-  /** Short label for the tab. */
-  name: string;
-  title: string;
-  body: string;
-  pills: string[];
-  image: string;
-}
-
 export interface FaqItem {
   q: string;
   a: string;

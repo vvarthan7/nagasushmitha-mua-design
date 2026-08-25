@@ -1,6 +1,58 @@
-import { useState } from "react";
-import { services } from "../data";
+import { useState, type ReactNode } from "react";
+import serviceBridal from "../assets/bridal/NS_Bridal_10.webp";
+import serviceEditorial from "../assets/editorial/NS_Editorial_5.webp";
+import servicePersonal from "../assets/party/NS_Party_1.webp";
 import { pill } from "../styles/ui";
+
+interface Service {
+  /** Short label for the tab. */
+  name: string;
+  title: string;
+  body: ReactNode;
+  pills: string[];
+  image: string;
+}
+
+const SERVICES: Service[] = [
+  {
+    name: "Bridal",
+    title: "Bridal makeup & hair",
+    image: serviceBridal,
+    pills: ["Trial included", "Premium products", "All occasions"],
+    body: (
+      <>
+        Luxury bridal makeup that enhances, not hides, your natural beauty.
+        Thoughtfully crafted for weddings, every bridal experience includes a
+        personalised trial, wedding-day planning, and premium products that look
+        flawless in both natural light and photography.
+      </>
+    ),
+  },
+  {
+    name: "Editorial",
+    title: "Editorial & portfolio",
+    image: serviceEditorial,
+    pills: ["On location", "Studio flash", "Continuity"],
+    body: (
+      <>
+        Portfolio shoots, campaigns and film. Looks designed for flash, for
+        continuity across a long shoot day, and for retouch-light delivery.
+      </>
+    ),
+  },
+  {
+    name: "Personal",
+    title: "Personal makeup course",
+    image: servicePersonal,
+    pills: ["One to one", "2 sessions", "Product list"],
+    body: (
+      <>
+        A private session for your own face — what suits your features, what to
+        own, what to skip.
+      </>
+    ),
+  },
+];
 
 const PANEL = [
   "grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] items-center",
@@ -30,7 +82,7 @@ const FRAME = [
 
 export default function Services() {
   const [active, setActive] = useState(0);
-  const service = services[active];
+  const service = SERVICES[active];
 
   return (
     <section
@@ -42,7 +94,7 @@ export default function Services() {
       </h2>
 
       <div className="flex flex-wrap gap-2" role="tablist">
-        {services.map((item, i) => (
+        {SERVICES.map((item, i) => (
           <button
             key={item.name}
             type="button"
@@ -61,7 +113,7 @@ export default function Services() {
           <h3 className="font-serif text-[clamp(22px,3.2vw,30px)] font-normal text-ink">
             {service.title}
           </h3>
-          <p className="max-w-[46ch] font-sans text-[14px] leading-[1.8] text-pretty text-text">
+          <p className="max-w-[46ch] font-sans text-[14px] leading-[1.8] text-pretty text-text [&_em]:text-plum">
             {service.body}
           </p>
           <div className="mt-1 flex flex-wrap gap-2">
