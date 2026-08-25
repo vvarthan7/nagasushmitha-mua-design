@@ -1,23 +1,159 @@
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
+
   // Deployment config for Cloudflare Workers. Its presence is what stops
   // `wrangler deploy` from running framework auto-detection — that path tries
   // to wire in @cloudflare/vite-plugin, which needs Vite 6+, and fails the
   // build on Vite 5 before anything is compiled.
+  //
+  // `name` is the Worker script this deploys to. Changing it does not rename
+  // anything: it publishes to a *different* Worker and leaves the old one
+  // running, still holding whatever custom domain was attached to it. That is
+  // why a rename has to be followed by re-pointing the domain by hand, and why
+  // this line should not be edited casually.
   "name": "nsmakeupartistry",
   "main": "worker/index.ts",
   "compatibility_date": "2026-08-01",
 
   // Everything `vite build` emits, served straight from Cloudflare's edge.
-  // Asset requests never reach the Worker, so the three pages cost no
-  // invocations — only /api/enquiry does.
   "assets": {
     "directory": "./dist",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+
+    // ── Pre-launch only ──────────────────────────────────────────────────
+    // Normally Cloudflare answers asset requests at the edge and never invokes
+    // the Worker, so the three pages cost no invocations. That is the right
+    // arrangement — but it also means worker/index.ts cannot see those
+    // requests, and the launch gate inside it would never run. The site would
+    // be readable at nsmakeupartistry.com the moment the domain is attached.
+    //
+    // So until launch, every request goes through the Worker. Pre-launch
+    // traffic is a handful of visits, so the invocations are free in practice.
+    //
+    // AT LAUNCH: delete this line in the same commit that sets LAUNCHED to
+    // true. Leaving it behind is not a bug, but it bills an invocation for
+    // every image on every page load, forever.
+    "run_worker_first": true
+  },
+
+  // Non-secret configuration lives here rather than in the dashboard, and the
+  // distinction is load-bearing. `wrangler deploy` replaces the Worker's
+  // bindings with exactly what this file declares, so a *plain-text* variable
+  // typed into the dashboard is deleted by the next deploy — silently, and the
+  // enquiry endpoint starts answering 500 with nothing in the logs to say a
+  // variable went missing. Encrypted secrets are the exception: they survive
+  // deploys and must never appear here, because this file is public.
+  //
+  // So: addresses here, RESEND_API_KEY as a dashboard secret. See README.
+  "vars": {
+    "ENVIRONMENT": "production",
+
+    // ── The launch switch ────────────────────────────────────────────────
+    // false: nsmakeupartistry.com serves the holding page in worker/holding.ts
+    //        and nothing else. No markup, no images, no bundle.
+    // true:  the real site.
+    //
+    // AT LAUNCH: set this to true and delete `run_worker_first` above, in one
+    // commit, then push to main. Confirm with:
+    //     curl -s https://nsmakeupartistry.com/api/health
+    "LAUNCHED": false,
+
+    // Read only by the holding page, which has no bundle to be inlined into.
+    // The site itself uses VITE_WHATSAPP_NUMBER, a Build variable, and the two
+    // are unrelated at runtime — this one can be deleted at launch with the
+    // rest of the holding page.
+    "WHATSAPP_NUMBER": "919380758632",
+
+    // Where enquiries land. Already on the site as a mailto link, so listing
+    // it here exposes nothing new.
+    "ENQUIRY_TO": "contact@nsmakeupartistry.com",
+
+    // Resend's shared sandbox sender, which delivers *only* to the address the
+    // Resend account was registered with — any other recipient comes back 403.
+    // Once send.nsmakeupartistry.com is verified at resend.com/domains, change
+    // this to "Naga Sushmitha <enquiries@send.nsmakeupartistry.com>" and
+    // ENQUIRY_TO can be any inbox.
+    "ENQUIRY_FROM": "Naga Sushmitha <onboarding@resend.dev>"
+  },
+
+  // Lets /api/health report which deploy is answering, so "did my push go
+  // live?" is a question with an answer rather than a guess about asset
+  // hashes.
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA"
   },
 
   // The handler reports refusals with console.error rather than throwing;
   // without this, those lines have nowhere to land.
   "observability": {
     "enabled": true
+  },
+
+  // Off. Before launch there is no reason for a second public address, and
+  // afterwards the domain is the address — one site, one URL, and nothing for
+  // Google to treat as a duplicate. Review happens on the preview Worker
+  // below, which is what its workers.dev URL is for.
+  "workers_dev": false,
+
+  // ── Staging ────────────────────────────────────────────────────────────
+  // A second, independent Worker built from the same repo, so the preview
+  // branch can be reviewed on a real URL while the domain stays shut. This is
+  // the URL to send round before launch:
+  //
+  //     https://nsmakeupartistry-preview.<subdomain>.workers.dev
+  //
+  // LAUNCHED is true here — staging shows the real site, which is the entire
+  // point of having it. Its noindex header comes from worker/index.ts, keyed
+  // on ENVIRONMENT, so the staging copy cannot be indexed and cannot surface
+  // ahead of the launch.
+  //
+  // Named environments do not inherit bindings: `vars`, `version_metadata` and
+  // `assets` are re-declared on purpose, and dropping any of them would leave
+  // staging running a subtly different Worker from production, which defeats
+  // the point of having it.
+  //
+  // RESEND_API_KEY is *not* shared: secrets are per-Worker, so staging needs
+  // its own copy adding once.
+  "env": {
+    "preview": {
+      "name": "nsmakeupartistry-preview",
+      "workers_dev": true,
+
+      "assets": {
+        "directory": "./dist",
+        "binding": "ASSETS",
+        // Needed here for the noindex header, for the same reason production
+        // needs it for the gate: without it the Worker never sees a page
+        // request. Staging keeps it after launch — a handful of invocations
+        // is the price of staying out of the index.
+        "run_worker_first": true
+      },
+
+      "vars": {
+        "ENVIRONMENT": "preview",
+
+        // True, so staging shows the real site. Flip it to false here — and
+        // only here — to review the holding page itself before it goes on the
+        // domain; WHATSAPP_NUMBER below is what makes that review accurate
+        // rather than a version with one button missing.
+        "LAUNCHED": true,
+        "WHATSAPP_NUMBER": "919380758632",
+
+        // Staging sends real email through the same Resend account. Pointed at
+        // the same inbox deliberately — a test that lands somewhere nobody
+        // reads is not a test — so expect enquiries from staging to look
+        // identical to live ones apart from the sender's display name.
+        "ENQUIRY_TO": "contact@nsmakeupartistry.com",
+        "ENQUIRY_FROM": "Naga Sushmitha [staging] <onboarding@resend.dev>"
+      },
+
+      "version_metadata": {
+        "binding": "CF_VERSION_METADATA"
+      },
+
+      "observability": {
+        "enabled": true
+      }
+    }
   }
 }

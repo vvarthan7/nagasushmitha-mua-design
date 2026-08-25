@@ -6,3 +6,6 @@ dist
 
 # Secrets: .env.local is covered by *.local, but keep plain .env out too.
 .env
+
+# wrangler's local dev state (miniflare caches, build temp)
+.wrangler

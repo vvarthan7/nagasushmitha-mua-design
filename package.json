@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "blur": "node scripts/generate-blur.mjs",
-    "images": "node scripts/optimize-images.mjs"
+    "images": "node scripts/optimize-images.mjs",
+    "deploy": "npm run build && wrangler deploy --env=\"\"",
+    "deploy:preview": "npm run build && wrangler deploy --env preview"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -24,6 +26,7 @@
     "sharp": "^0.35.3",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.7.2",
-    "vite": "^5.4.11"
+    "vite": "^5.4.11",
+    "wrangler": "^4.126.0"
   }
 }

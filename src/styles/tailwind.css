@@ -1,7 +1,14 @@
-@import "tailwindcss";
-
-/* The project has no .git, so Tailwind's automatic source detection has no root
-   to anchor to — point it at src/ explicitly. */
+/* `source(none)` turns Tailwind's automatic detection off, and the @source
+   below is then the only thing it scans.
+ *
+ * Automatic detection walks the repository root, and everything it finds there
+ * that is not git-ignored becomes a source of candidate class names — legacy/,
+ * README.md, DESIGN_SYSTEM.md, and any .ts file that happens to contain CSS.
+ * That is how worker/holding.ts, which ships no Tailwind at all, silently added
+ * utilities to the site's stylesheet and moved its content hash. Anything with
+ * a word that parses as a utility can do the same, so the scan is pinned to the
+ * only directory that actually uses Tailwind. */
+@import "tailwindcss" source(none);
 @source "../";
 
 /* ═══════════════════════════════════════════════════════════════════════════
