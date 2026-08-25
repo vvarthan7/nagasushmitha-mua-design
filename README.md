@@ -211,6 +211,14 @@ than during it.
 3. Optionally delete `WHATSAPP_NUMBER` from `vars` and
    [worker/holding.ts](worker/holding.ts) with it
 
+Step 2 has a consequence worth deciding on rather than discovering. Once the
+Worker stops seeing asset requests, it stops adding `x-robots-tag: noindex` to
+them — so the workers.dev address would start serving an indexable copy of the
+live site. Either keep `run_worker_first` (costs an invocation per request, keeps
+the preview URLs safely noindexed) or set `workers_dev: false` (the domain
+becomes the only address, assets are free again, and preview URLs go away with
+it). Leaving both on is the one combination that quietly creates a duplicate.
+
 Then confirm, from a terminal rather than a browser tab:
 
 ```bash

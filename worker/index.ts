@@ -186,12 +186,17 @@ export default {
        photograph and every price, under names that are guessable from a sitemap
        or an old crawl.
 
-       This is only reached at all because `assets.run_worker_first` is set on
-       production in wrangler.jsonc. Cloudflare otherwise answers asset
-       requests at the edge without ever invoking the Worker, and this check
-       would never run. The two settings are one mechanism; flipping LAUNCHED
-       without also clearing run_worker_first leaves the site working but
-       paying an invocation per request. */
+       This is only reached at all because `assets.run_worker_first` is set in
+       wrangler.jsonc. Cloudflare otherwise answers asset requests at the edge
+       without ever invoking the Worker, and this check would never run. The
+       two settings are one mechanism; flipping LAUNCHED without also clearing
+       run_worker_first leaves the site working but paying an invocation per
+       request.
+
+       Clearing it has a second effect that is easy to miss: the noindex below
+       stops being applied too, because the Worker no longer sees asset
+       requests. Post-launch that matters — see the launch checklist in the
+       README. */
     if (!launched(env) && !preview) {
       return holdingPage({
         instagram: INSTAGRAM_URL,
