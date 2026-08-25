@@ -238,19 +238,19 @@ export const faqs: FaqItem[] = [
 export const testimonials: Testimonial[] = [
   {
     testimonial:
-      "She did makeover for my wedding. It was really comfortable working with her. Very Friendly nature. I would recommend her for the makeup, hairstyle and costume design. She has good sense of latest fashion stylea.It was really awsome and i was looking beutifull in all my wedding attires. I received compliments from all of my relatives, friends, family members. ",
+      "She did the makeover for my wedding. It was really comfortable working with her. She has a very friendly nature, and I would highly recommend her for makeup, hairstyling, and costume designing. She has a great sense of the latest fashion styles. It was truly awesome, and I looked beautiful in all my wedding attires. I received compliments from all my relatives, friends, and family members.",
     name: "Deepika Suresh",
     meta: "Bride",
   },
   {
     testimonial:
-      "*A wonderful MUA* I had got make up done by sushmitha for the first time for my baby shower. The attention to small detailing that she gave was very impressive and I was super happy about how I looked at the end of the session. Very professional and understanding about how we want to look, which is very important. More power to you girl, way to go!",
+      "*A wonderful MUA*, I had my makeup done by Sushmitha for the first time for my baby shower. The attention to detail she gave was very impressive, and I was extremely happy with how I looked at the end of the session. She is very professional and understanding of how we want to look, which is very important. More power to you, girl! Way to go!",
     name: "Hema katta",
     meta: "Baby Shower",
   },
   {
     testimonial:
-      "You're an amazing artist. Truly not just the hands ... but your soul... pure magic... n obviously it showed ",
+      "You’re an amazing artist. Truly, it’s not just your hands, but your soul that creates pure magic. And obviously, it showed.",
     name: "Dr.Ranjana",
     meta: "Bride",
   },
@@ -262,7 +262,7 @@ export const testimonials: Testimonial[] = [
   },
   {
     testimonial:
-      "Today makeup was lit 🔥Like literally soooo manyyyyyyy manyyyy manyyyy compliments Thanks a Lott for such an amazing makeup for my best day",
+      "Makeup was lit! 🔥 Literally, I received so many compliments! Thank you so much for such amazing makeup on my best day.”",
     name: "Navya Vishwesh,",
     meta: "Bride",
   },
