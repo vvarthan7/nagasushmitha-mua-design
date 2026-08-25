@@ -15,7 +15,7 @@ export default function Faq() {
   const [open, setOpen] = useState(0);
 
   return (
-    <section className="bg-blush">
+    <section className="bg-white">
       <div className="mx-auto grid max-w-shell grid-cols-[repeat(auto-fit,minmax(280px,1fr))] items-start gap-[clamp(22px,4vw,44px)] px-gutter py-[clamp(36px,6vw,66px)]">
         <div className="flex flex-col gap-2.5">
           <p className="font-sans text-[10px] tracking-[0.26em] text-rust uppercase">

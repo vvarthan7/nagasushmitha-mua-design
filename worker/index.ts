@@ -181,6 +181,37 @@ export default {
     const { pathname, hostname } = new URL(request.url);
     const preview = isPreviewHost(hostname);
 
+    /* Kill any service worker left behind by whatever used to be hosted on
+       this domain.
+     *
+     * A service worker outlives the site that registered it. It is not part of
+     * the HTTP cache, so clearing the cache does not remove it, and one written
+     * offline-first answers *every* navigation from its own storage — which is
+     * why the old page appears even at a URL like /api/health that never
+     * existed before. The visitor has no way to know, and no reason to look:
+     * from their side the new site simply never arrived.
+     *
+     * A browser rechecks the script it registered, and unregisters when that
+     * fetch 404s. It does *not* unregister on a 5xx — it assumes a temporary
+     * server problem and keeps the worker — so the holding page's 503 below
+     * would leave a stale registration in place indefinitely, on every device
+     * that ever loaded the old site.
+     *
+     * Hence this, above everything: the request a browser makes to recheck a
+     * service worker script is self-identifying, and this project serves no
+     * service worker at any path, so 404 is both the honest answer and the one
+     * that clears the registration. Kept after launch — the cost is nothing and
+     * the alternative is silently losing returning visitors. */
+    if (
+      request.headers.get("sec-fetch-dest") === "serviceworker" ||
+      request.headers.get("service-worker") === "script"
+    ) {
+      return new Response("No service worker is served from this origin.", {
+        status: 404,
+        headers: { "content-type": "text/plain; charset=utf-8" },
+      });
+    }
+
     /* Both API routes sit above the gate: it hides the *site*, not the
        endpoints. /api/health is how you check the gate is set the way you think
        it is, and /api/enquiry needs to be verifiable on the production Worker —
