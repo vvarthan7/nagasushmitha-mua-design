@@ -59,18 +59,19 @@ export interface Work {
   mobileHeight: number;
 }
 
-/** One frame of the banner's dissolve cycle. See the note above
- *  `heroReelFrames` in data.ts for why the positions are per-photo. */
+/** One frame of the banner's dissolve cycle. See the note above `FRAMES` in
+ *  HeroReel.tsx, which is where these live, for why the positions are
+ *  per-photo. */
 export interface HeroReelFrame {
   src: string;
   /** Blur-up placeholder: a 20px WebP of this same photo, inline as a data
    *  URI, held under frame 1 until the real photograph arrives. Generated —
-   *  see scripts/generate-blur.mjs — and paired with `src` through one key in
-   *  data.ts rather than named separately, so the two cannot drift apart. */
+   *  see scripts/generate-blur.mjs — and named beside `src` in HeroReel.tsx
+   *  rather than derived from it, so the two have to be changed together. */
   blur: string;
   /** background-position used at every width. On a desktop the crop is
    *  height-driven for most sources, so it is usually the Y that acts — see
-   *  the per-photo widths listed above `heroReelFrames` in data.ts. */
+   *  the per-photo widths listed above `FRAMES` in HeroReel.tsx. */
   position: string;
   /** Overrides `position` below 860px, where the banner goes portrait and the
    *  crop turns width-driven. Falls back to `position` when absent. */

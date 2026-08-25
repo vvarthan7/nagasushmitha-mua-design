@@ -1,4 +1,11 @@
-import { marqueeText } from "../data";
+/* The strip's own copy. It sat in data.ts with the rest of the page's content,
+   but nothing else ever read it — one caller, one string — while data.ts's
+   other exports are photographs and structured content that several sections
+   share. Here it also keeps this file free of imports, which is what lets
+   vite.config.ts render the component to markup at build time; see firstPaint
+   there. Nothing else may be imported into this file without checking that. */
+const TEXT =
+  "Bridal ◆ Muhurtham ◆ Reception ◆ Sangeet ◆ Editorial ◆ Saree draping ◆ Portfolio ◆ Bridal ◆ Muhurtham ◆ Reception ◆ Sangeet ◆ Editorial ◆ Saree draping ◆ Portfolio ◆";
 
 /* animate-marquee and its keyframe live in styles/tailwind.css — the -50%
    endpoint is what the doubled run below is for. */
@@ -16,8 +23,8 @@ export default function Marquee() {
     >
       {/* Two identical runs so the -50% keyframe loops seamlessly. */}
       <div className={TRACK}>
-        <span>{marqueeText}</span>
-        <span>{marqueeText}</span>
+        <span>{TEXT}</span>
+        <span>{TEXT}</span>
       </div>
     </div>
   );

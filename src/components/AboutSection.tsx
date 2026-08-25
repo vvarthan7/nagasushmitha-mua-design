@@ -1,10 +1,4 @@
-import { aboutImage } from "../data";
-
-/**
- * About section — option 2A "Portrait + three beats"
- * Arched portrait left, three labelled beats as a hairline list right.
- * Sits directly under <HeroReel />.
- */
+export const PORTRAIT = "src/assets/nagasushmitha.webp";
 
 interface Beat {
   label: string;
@@ -26,11 +20,6 @@ const BEATS: Beat[] = [
   },
 ];
 
-/* ── Class names ───────────────────────────────────────────────────────────
-   Tinted ground with the copy on a white card, so this section separates from
-   the white Services block below it. blush rather than blush-soft because the
-   Marquee strip directly above is already blush-soft and the two would merge
-   into one band. */
 const SECTION = [
   "scroll-mt-nav-offset bg-blush",
   "px-[clamp(18px,4vw,48px)] py-[clamp(30px,4.5vw,68px)]",
@@ -77,35 +66,31 @@ const CTA = [
   "upto-560:self-stretch upto-560:text-center",
 ].join(" ");
 
-interface AboutSectionProps {
-  image?: string;
-  imageAlt?: string;
-  eyebrow?: string;
-  ctaLabel?: string;
-  ctaHref?: string;
-}
-
-export default function AboutSection({
-  image = aboutImage,
-  imageAlt = "Naga Sushmitha holding a red rose",
-  eyebrow = "About Sushmitha",
-  ctaLabel = "See her work",
-  ctaHref = "#gallery",
-}: AboutSectionProps) {
+export default function AboutSection() {
   return (
     <section id="about" className={SECTION} aria-labelledby="about-heading">
       <div className={INNER}>
         <figure className="relative upto-980:w-full upto-980:max-w-105">
           <span className={FRAME} aria-hidden="true" />
           <div className="relative aspect-3/4 overflow-hidden rounded-[200px_200px_12px_12px] bg-blush">
-            <img className={IMG} src={image} alt={imageAlt} loading="lazy" />
+            {/* Still lazy, and more so than before: the markup now reaches the
+                browser during HTML parse rather than after React has mounted,
+                so an eager portrait would be in the queue alongside the banner
+                frame that decides LCP. The arch is aspect-ratioed, so nothing
+                moves while it waits. */}
+            <img
+              className={IMG}
+              src={PORTRAIT}
+              alt="Naga Sushmitha holding a red rose"
+              loading="lazy"
+            />
           </div>
         </figure>
 
         <div className="flex flex-col gap-7.5">
           <div className="flex flex-col gap-3">
             <p className="font-sans text-[10px] tracking-[0.26em] text-rust uppercase">
-              {eyebrow}
+              About Sushmitha
             </p>
             <h2
               className="font-serif text-[clamp(30px,3.4vw,46px)] leading-[1.12] font-normal text-pretty text-ink [&_em]:text-plum"
@@ -131,8 +116,8 @@ export default function AboutSection({
             ))}
           </dl>
 
-          <a className={CTA} href={ctaHref}>
-            {ctaLabel}
+          <a className={CTA} href="#gallery">
+            See her work
           </a>
         </div>
       </div>

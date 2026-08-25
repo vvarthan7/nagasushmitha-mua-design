@@ -1,22 +1,19 @@
 /* Photos with a fixed role on the page, referenced by name below. */
 import bridal01 from "./assets/gallery/bridal-01.jpg";
 import bridal04 from "./assets/gallery/bridal-04.jpg";
-import nagasushmitha from "./assets/nagasushmitha/nagasushmitha.webp";
 import serviceBridal from "./assets/bridal/NS_Bridal_10.webp";
 import serviceEditorial from "./assets/editorial/NS_Editorial_5.webp";
 import servicePersonal from "./assets/party/NS_Party_1.webp";
-/* The portfolio grid's photos and the banner's four frames are not imported
-   here. They go through `photo()` below, which resolves a path to both the
-   image and its blur placeholder at once — see the note there for why the two
-   cannot be named separately. */
+/* The portfolio grid's photos are not imported here. They go through
+   `photo()` below, which resolves a path to both the image and its blur
+   placeholder at once — see the note there for why the two cannot be named
+   separately. The banner's four frames are imported by HeroReel.tsx itself. */
 import { blurs, type BlurKey } from "./data.blur";
 import type {
   BookingStep,
   FaqItem,
   GalleryCategory,
   GalleryShot,
-  HeroReelFrame,
-  HeroStat,
   Service,
   Testimonial,
   Work,
@@ -74,12 +71,11 @@ function pickShots(modules: Record<string, ImageModule>): string[] {
 /* Both letter cases are listed because glob matching is case-sensitive and
    phone cameras write .JPG. The pattern is repeated rather than hoisted into a
    constant because import.meta.glob is compiled away at build time and only
-   accepts a literal. */
-const bannerModules = import.meta.glob<ImageModule>(
-  "./assets/banner/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}",
-  { eager: true },
-);
+   accepts a literal.
 
+   src/assets/banner is not swept here. The banner names its four frames one by
+   one in HeroReel.tsx and imports them there, so nothing in this module needs
+   them — see the note above FRAMES for why they were moved out. */
 const bridalModules = import.meta.glob<ImageModule>(
   "./assets/bridal/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}",
   { eager: true },
@@ -98,28 +94,24 @@ const editorialModules = import.meta.glob<ImageModule>(
 const bridalShots = pickShots(bridalModules);
 const editorialShots = pickShots(editorialModules);
 
-/* The photos `photo()` can resolve, by path. These are the four folders the
-   placeholder generator covers, and the two lists have to stay in step — see
-   the FOLDERS note in scripts/generate-blur.mjs.
+/* The photos `photo()` can resolve, by path. These are three of the four
+   folders the placeholder generator covers — banner/ is the fourth and belongs
+   to HeroReel.tsx now — so a placeholder key is not on its own proof that this
+   map holds the photo; see the FOLDERS note in scripts/generate-blur.mjs.
 
    bridal/, party/ and editorial/ are one folder per portfolio filter, so a
    photo's folder is what decides which chip it appears under: moving a file
    between them is the whole of re-categorising it, once its entry below names
-   the new path.
-
-   banner/ is here even though the hero names its four frames one by one rather
-   than sweeping the folder: going through the glob is what lets those frames
-   take their placeholder from the same key as their URL. */
+   the new path. */
 const modulesByPath: Record<string, ImageModule> = {
-  ...bannerModules,
   ...bridalModules,
   ...partyModules,
   ...editorialModules,
 };
 
 /** Resolves one photo to the two things a blur-up needs: the hashed URL Vite
- *  emits, and the placeholder held in front of it until it arrives. Used by the
- *  portfolio tiles and by the banner's frames.
+ *  emits, and the placeholder held in front of it until it arrives. Used by
+ *  the portfolio tiles.
  *
  *  The point of going through a path rather than an import is that both come
  *  from the same key, so they cannot disagree. Pairing them by hand — a `src:`
@@ -207,109 +199,8 @@ export const galleryFilters: readonly GalleryCategory[] = [
    for rather than growing with the gallery. */
 export const instagramPosts: GalleryShot[] = gallery.slice(0, 8);
 
-export const aboutImage = nagasushmitha;
 export const beforeImage = bridal04;
 export const afterImage = bridal01;
-
-/* The banner cross-dissolves these in order over one 24s cycle. Exactly four,
-   or the CSS keyframes desync — see the SLOTS note in HeroReel.tsx.
-
-   `position` is the background-position, and it is per-photo because cover
-   crops to whichever axis overflows. Only ever ONE axis does, and which one it
-   is depends on the photo, not on the breakpoint: the banner is 100vw × 700px,
-   so a source overflows vertically above `700 × its aspect ratio` and
-   horizontally below it. Those four widths are:
-
-     NS_Banner_1  8088×4949  landscape  1144px
-     NS_Banner_2  1280×853   landscape  1051px
-     NS_Banner_3  1333×1586  portrait    588px
-     NS_Banner_4  1333×1744  portrait    535px
-
-   Above its own number a frame is height-driven and only Y does anything;
-   below it the crop is width-driven and only X does. So on a desktop the two
-   landscape frames are still width-driven between 860 and ~1100px — their X
-   is live there, which is why they are left at 50% rather than treated as
-   inert — and on a tablet the two portrait frames stay height-driven down to
-   ~590 and ~535px, which is why their `mobilePosition` repeats the desktop Y
-   instead of parking it anywhere.
-
-   `mobilePosition` takes over below 860px, where the banner turns portrait
-   (`min(88svh, 700px)`) and every frame ends up width-driven at phone widths.
-   Only the two landscape frames need a large X change there; the portrait
-   ones still need one, because even at ~65-70% of the photo a centred crop
-   leaves the face against an edge.
-
-   The portrait sources lose most of their height on desktop — at 1440px only
-   ~36% of NS_Banner_4 is in the band, at 1920px only ~27% — so the Y values
-   below are tuned per-photo against where the face falls, not set to a shared
-   default. Ken Burns then pushes in a further ~6%, tightening around the
-   centre and drifting up-left by 1.5%; the crops below leave room for it.
-
-   Re-tune Y here if `height` on <HeroReel> changes: a taller banner takes a
-   deeper band, so a value that framed the chin at 620px can leave slack at the
-   top at 700px. These are set for 700px. */
-export const heroReelFrames: HeroReelFrame[] = [
-  {
-    ...photo("banner/NS_Banner_1.webp"),
-    /* The widest source of the four, so the band is generous — 77% of the
-       photo at 1440px — and Y is set by the top of her hair rather than by the
-       face: 20% sits it just inside the upper edge at 1920px, where 25%
-       clipped it. The necklace stays in at both widths. */
-    position: "50% 20%",
-    /* Her face sits ~68% across, so once the crop narrows to ~33% of the photo
-       50% would leave her half out of frame on the right. */
-    mobilePosition: "68% 20%",
-    alt: "Reception look, soft glam with sapphire and diamond jewellery over an ivory beaded saree",
-  },
-  {
-    ...photo("banner/NS_Banner_2.webp"),
-    /* Lit from one side with the whole left half in shadow, so the framing is
-       carried entirely by where her face lands. 22% keeps the hairline and the
-       maang tikka in at 1920px without spending the bottom of the band on the
-       shoulder. */
-    position: "50% 22%",
-    /* The most off-centre of the four — her face is ~75% across and the crop
-       keeps only 36% of the photo — so this is the largest X shift here. At
-       72% her nose was still touching the right edge. */
-    mobilePosition: "88% 22%",
-    alt: "Getting ready, smoky eye and deep pink lip with a blue and gold embellished outfit",
-  },
-  {
-    ...photo("banner/NS_Banner_3.webp"),
-    /* She sits low in this frame — hair from 38% of the photo, necklace down
-       to ~72% — so this Y is the outlier by design. 57% fits the maang tikka
-       and the kundan choker at 1440px; 62% put the tikka on the top edge and
-       max Ken Burns then cut it. */
-    position: "50% 57%",
-    /* Portrait source, so at phone widths the crop keeps ~64% of it. Her face
-       is ~61% across; 78% centres the band on her. Y repeats the desktop value
-       because between ~560 and 860px this frame is still height-driven. */
-    mobilePosition: "78% 57%",
-    alt: "Bridal portrait in low light, kundan choker and maang tikka with a red embroidered lehenga",
-  },
-  {
-    ...photo("banner/NS_Banner_4.webp"),
-    /* The tightest of the four: only ~36% of the photo is in the band at
-       1440px and ~27% at 1920px, so the head is cut above the brow at every
-       desktop width — unavoidable, the band is shorter than she is. Y is set
-       by the mouth instead, from both directions: under 26% the lip starts
-       leaving the band at 1920px, over it the brow goes at 1440px. */
-    position: "50% 26%",
-    /* She sits left of centre here, unlike the other three — face at ~39% —
-       so this X moves the opposite way. */
-    mobilePosition: "14% 26%",
-    alt: "Muhurtham look, warm gold eye with temple jewellery, nose ring and a green silk saree",
-  },
-];
-
-export const heroStats: HeroStat[] = [
-  { value: "1000+", label: "Brides" },
-  { value: "Since 2017", label: "Practice" },
-  { value: "Bangalore", label: "Cities" },
-];
-
-export const marqueeText =
-  "Bridal ◆ Muhurtham ◆ Reception ◆ Sangeet ◆ Editorial ◆ Saree draping ◆ Portfolio ◆ Bridal ◆ Muhurtham ◆ Reception ◆ Sangeet ◆ Editorial ◆ Saree draping ◆ Portfolio ◆";
 
 export const bookingSteps: BookingStep[] = [
   {
