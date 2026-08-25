@@ -100,12 +100,6 @@ function enquiryApi(): Plugin {
   };
 }
 
-/* Where the rendered sections go. A comment rather than an empty element, so
-   that nothing of the seam survives into the served document — the markup
-   replaces it outright. index.html carries the matching note about what sits
-   either side of it. */
-const SECTIONS = "<!--static-sections-->";
-
 export default defineConfig(({ mode }) => {
   /* The handler reads RESEND_API_KEY from process.env, which Vite does not
      populate on its own. Loading with an empty prefix picks up unprefixed
