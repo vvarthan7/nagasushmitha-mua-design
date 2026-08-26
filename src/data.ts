@@ -227,7 +227,7 @@ export const faqs: FaqItem[] = [
   },
   {
     q: "How far ahead should I book?",
-    a: "Three to six months for peak season (November to February). Off-season dates often open up with a month of notice.",
+    a: "Three to six months for peak season November to February. Off-season dates often open up with a month of notice.",
   },
   {
     q: "What about my bridesmaids and family?",
