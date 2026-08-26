@@ -41,6 +41,7 @@ interface RequestContext {
 interface Enquiry {
   name: string;
   phone: string;
+  location: string;
   date: string;
   message: string;
 }
@@ -49,16 +50,26 @@ interface Enquiry {
 const MAX_LENGTH: Record<keyof Enquiry, number> = {
   name: 120,
   phone: 60,
+  location: 160,
   date: 60,
   message: 4000,
 };
+
+/** What the form sends: an Indian mobile number, ten digits, no country code.
+ *  The form strips it to that as it is typed; a client posting here directly
+ *  does no such thing, so the rule is stated again on this side. */
+const PHONE_DIGITS = 10;
 
 /** Read cap for the whole body, so a hostile client cannot stream forever. */
 const MAX_BODY_BYTES = 16_000;
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
-function json(status: number, body: unknown, headers: HeadersInit = {}): Response {
+function json(
+  status: number,
+  body: unknown,
+  headers: HeadersInit = {},
+): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "content-type": "application/json; charset=utf-8", ...headers },
@@ -66,7 +77,7 @@ function json(status: number, body: unknown, headers: HeadersInit = {}): Respons
 }
 
 /** Trim, cap, and collapse newlines out of everything but the message — the
- *  other three are single-line fields and `name` ends up in the subject. */
+ *  others are single-line fields and `name` ends up in the subject. */
 function field(body: Record<string, unknown>, key: keyof Enquiry): string {
   const value = body[key];
   if (typeof value !== "string") return "";
@@ -89,6 +100,7 @@ function render(enquiry: Enquiry): { text: string; html: string } {
   const rows: [string, string][] = [
     ["Name", enquiry.name],
     ["Phone / WhatsApp", enquiry.phone],
+    ["Location", enquiry.location || "—"],
     ["Event date", enquiry.date || "—"],
   ];
 
@@ -121,7 +133,10 @@ function render(enquiry: Enquiry): { text: string; html: string } {
   return { text, html };
 }
 
-export async function onRequest({ request, env }: RequestContext): Promise<Response> {
+export async function onRequest({
+  request,
+  env,
+}: RequestContext): Promise<Response> {
   if (request.method !== "POST") {
     return json(405, { error: "Method not allowed." }, { allow: "POST" });
   }
@@ -137,7 +152,9 @@ export async function onRequest({ request, env }: RequestContext): Promise<Respo
     const missing = [!apiKey && "RESEND_API_KEY", !to && "ENQUIRY_TO"]
       .filter(Boolean)
       .join(" and ");
-    console.error(`[enquiry] not configured — missing ${missing}. See .env.example`);
+    console.error(
+      `[enquiry] not configured — missing ${missing}. See .env.example`,
+    );
     return json(500, { error: "Email is not configured on the server yet." });
   }
 
@@ -159,7 +176,8 @@ export async function onRequest({ request, env }: RequestContext): Promise<Respo
     let body: Record<string, unknown>;
     try {
       const parsed: unknown = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") throw new Error("not an object");
+      if (!parsed || typeof parsed !== "object")
+        throw new Error("not an object");
       body = parsed as Record<string, unknown>;
     } catch {
       return json(400, { error: "The enquiry could not be read." });
@@ -174,12 +192,17 @@ export async function onRequest({ request, env }: RequestContext): Promise<Respo
     const enquiry: Enquiry = {
       name: field(body, "name"),
       phone: field(body, "phone"),
+      location: field(body, "location"),
       date: field(body, "date"),
       message: field(body, "message"),
     };
 
     if (!enquiry.name || !enquiry.phone) {
       return json(400, { error: "Please leave a name and a phone number." });
+    }
+
+    if (enquiry.phone.replace(/\D/g, "").length !== PHONE_DIGITS) {
+      return json(400, { error: "Please leave a 10-digit phone number." });
     }
 
     const { text, html } = render(enquiry);

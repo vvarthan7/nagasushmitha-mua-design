@@ -10,6 +10,51 @@ interface EnquiryField {
   type?: string;
   autoComplete?: string;
   required?: boolean;
+  /** Rewrites what was typed, on every keystroke. */
+  sanitize?: (value: string) => string;
+  /** The problem with the value, or "" when there is none. */
+  validate?: (value: string) => string;
+}
+
+/* ── Phone ─────────────────────────────────────────────────────────────────
+   type="tel" only asks a phone for its number pad; every browser still accepts
+   letters in the field, and nothing downstream was checking. Ten digits is the
+   whole of an Indian mobile number, so ten digits is what the field holds —
+   everything else is dropped as it is typed, the +91 along with it.
+   ────────────────────────────────────────────────────────────────────── */
+
+const PHONE_DIGITS = 10;
+
+const digitsOf = (value: string): string => value.replace(/\D/g, "");
+
+/** The digits, and at most ten of them. Neither the 91 of a country code nor
+ *  the 0 people dial before a number is part of one, so both are shed — but
+ *  only from a number already too long to be anything else, which leaves a 0
+ *  or a 9 typed first sitting where it was put. Trimming from the front and
+ *  capping at the back means an eleventh digit is simply ignored, rather than
+ *  shunting the ten already typed along by one. */
+function formatPhone(value: string): string {
+  let digits = digitsOf(value);
+  if (digits.length > PHONE_DIGITS && digits.startsWith("0")) {
+    digits = digits.slice(1);
+  }
+  if (digits.length > PHONE_DIGITS && digits.startsWith("91")) {
+    digits = digits.slice(2);
+  }
+  return digits.slice(0, PHONE_DIGITS);
+}
+
+/** Blank passes: `required` is what asks for a number at all, and saying so
+ *  twice would drop a message under the field the moment somebody tabbed past
+ *  it on their way to the rest of the form. Anything shorter than ten is still
+ *  being typed — nothing longer can arrive, the field having capped it. */
+function validatePhone(value: string): string {
+  const digits = digitsOf(value);
+  if (!digits) return "";
+  if (digits.length < PHONE_DIGITS) {
+    return "Please write all 10 digits of your number.";
+  }
+  return "";
 }
 
 const FIELDS: EnquiryField[] = [
@@ -21,12 +66,25 @@ const FIELDS: EnquiryField[] = [
   },
   {
     name: "phone",
-    placeholder: "Phone",
+    placeholder: "Mobile",
     type: "tel",
     autoComplete: "tel",
     required: true,
+    sanitize: formatPhone,
+    validate: validatePhone,
+  },
+  {
+    name: "location",
+    placeholder: "Location — city or venue",
+    autoComplete: "address-level2",
   },
 ];
+
+/** Every field starts empty, and returns here on a reset or a second enquiry.
+ *  Built from FIELDS so adding one to the list is the whole change. */
+const BLANK_FIELDS: Record<string, string> = Object.fromEntries(
+  FIELDS.map((field) => [field.name, ""]),
+);
 
 /** The handler in functions/api/enquiry.ts, which is what holds the Resend
  *  key. Root-relative rather than following Vite's relative `base`: the Worker
@@ -113,6 +171,19 @@ function validateDate(value: string): string {
   return "";
 }
 
+/** The one error line the form has, under whichever field it belongs to. */
+function FieldError({ id, children }: { id: string; children: string }) {
+  return (
+    <p
+      id={id}
+      role="alert"
+      className="pl-4.5 font-sans text-[12px] leading-[1.6] text-clay"
+    >
+      {children}
+    </p>
+  );
+}
+
 /* ── Form ─────────────────────────────────────────────────────────────── */
 
 /* Horizontal padding is set per use rather than living here: the date field
@@ -164,6 +235,8 @@ const RESET = [
 export default function Enquire() {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
+  const [fields, setFields] = useState(BLANK_FIELDS);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [date, setDate] = useState("");
   const [dateError, setDateError] = useState("");
   const pickerRef = useRef<HTMLInputElement>(null);
@@ -200,18 +273,25 @@ export default function Enquire() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    /* Checked here as well as on blur: a date typed and submitted straight
-       from the keyboard never blurs, and the picker's `min` only constrains
-       what can be clicked, not what can be typed. */
-    const dateProblem = validateDate(date);
-    if (dateProblem) {
-      setDateError(dateProblem);
-      return;
+    /* Checked here as well as on blur: a value typed and submitted straight
+       from the keyboard never blurs, and the date picker's `min` only
+       constrains what can be clicked, not what can be typed. Every problem is
+       set at once, so a form with two of them says so once rather than
+       surfacing the second only after the first is fixed. */
+    const problems: Record<string, string> = {};
+    for (const field of FIELDS) {
+      const problem = field.validate?.(fields[field.name]) ?? "";
+      if (problem) problems[field.name] = problem;
     }
+    const dateProblem = validateDate(date);
+
+    setFieldErrors(problems);
+    setDateError(dateProblem);
+    if (dateProblem || Object.keys(problems).length > 0) return;
 
     /* Read the fields before the first await — React clears currentTarget once
        the handler yields. The honeypot rides along with the rest. */
-    const values = Object.fromEntries(new FormData(event.currentTarget));
+    const payload = Object.fromEntries(new FormData(event.currentTarget));
 
     setStatus("sending");
     setError("");
@@ -220,7 +300,7 @@ export default function Enquire() {
       const response = await fetch(ENDPOINT, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
 
       /* A gateway error arrives as HTML, so a bare .json() would throw past the
@@ -237,22 +317,27 @@ export default function Enquire() {
     }
   }
 
-  /** The form is remounted fresh, but the date lives in state up here and so
-   *  has to be cleared by hand. */
+  /** The form is remounted fresh, but every value in it lives in state up here
+   *  and would come back with it, so the clearing is done by hand. */
   function sendAnother() {
     setStatus("idle");
-    setDate("");
-    setDateError("");
+    clearFields();
   }
 
-  /** Runs after the reset button has already blanked the uncontrolled fields.
-   *  Only the date and the two error messages are React's to clear — a native
-   *  reset cannot touch either, the date being a controlled input. */
+  /** Runs after the reset button has blanked the message, the one field the
+   *  browser still owns. Everything else is controlled, and a native reset
+   *  cannot touch state — nor the error messages hanging off it. */
   function clearForm() {
-    setDate("");
-    setDateError("");
+    clearFields();
     setError("");
     setStatus("idle");
+  }
+
+  function clearFields() {
+    setFields(BLANK_FIELDS);
+    setFieldErrors({});
+    setDate("");
+    setDateError("");
   }
 
   const sending = status === "sending";
@@ -310,18 +395,53 @@ export default function Enquire() {
             onSubmit={submit}
             onReset={clearForm}
           >
-            {FIELDS.map((field) => (
-              <input
-                key={field.name}
-                name={field.name}
-                type={field.type ?? "text"}
-                autoComplete={field.autoComplete}
-                required={field.required}
-                aria-label={field.placeholder}
-                placeholder={field.placeholder}
-                className={`${FIELD} rounded-full px-4.5`}
-              />
-            ))}
+            {FIELDS.map((field) => {
+              const problem = fieldErrors[field.name];
+              const errorId = `enquiry-${field.name}-error`;
+
+              return (
+                <div key={field.name} className="flex flex-col gap-1.5">
+                  <input
+                    name={field.name}
+                    type={field.type ?? "text"}
+                    autoComplete={field.autoComplete}
+                    required={field.required}
+                    value={fields[field.name]}
+                    onChange={(event) => {
+                      const value =
+                        field.sanitize?.(event.target.value) ??
+                        event.target.value;
+                      setFields((current) => ({
+                        ...current,
+                        [field.name]: value,
+                      }));
+                      /* Cleared rather than rechecked: a half-typed number is
+                         not yet a short one, and telling somebody so while
+                         they are still typing it is only nagging. */
+                      setFieldErrors((current) => ({
+                        ...current,
+                        [field.name]: "",
+                      }));
+                    }}
+                    onBlur={(event) =>
+                      setFieldErrors((current) => ({
+                        ...current,
+                        [field.name]:
+                          field.validate?.(event.target.value) ?? "",
+                      }))
+                    }
+                    aria-label={field.placeholder}
+                    placeholder={field.placeholder}
+                    aria-invalid={problem ? true : undefined}
+                    aria-describedby={problem ? errorId : undefined}
+                    aria-errormessage={problem ? errorId : undefined}
+                    className={`${FIELD} ${FIELD_INVALID} w-full rounded-full px-4.5`}
+                  />
+
+                  {problem && <FieldError id={errorId}>{problem}</FieldError>}
+                </div>
+              );
+            })}
 
             <div className="flex flex-col gap-1.5">
               <div className="relative">
@@ -401,21 +521,15 @@ export default function Enquire() {
               </div>
 
               {dateError && (
-                <p
-                  id="enquiry-date-error"
-                  role="alert"
-                  className="pl-4.5 font-sans text-[12px] leading-[1.6] text-clay"
-                >
-                  {dateError}
-                </p>
+                <FieldError id="enquiry-date-error">{dateError}</FieldError>
               )}
             </div>
 
             <textarea
               name="message"
               rows={4}
-              aria-label="Tell me about your vision"
-              placeholder="Tell me about your vision"
+              aria-label="Tell me about your event — what you need, and for how many"
+              placeholder="Tell me about your event — what you need, and for how many"
               className={`${FIELD} resize-y rounded-[20px] px-4.5`}
             />
 
