@@ -3,7 +3,7 @@
    dist/ and resolved against whatever URL the page was served from — which is
    the 404 on Cloudflare. Every other photo on the site is imported for the
    same reason; see the note above the heroes in components/content.ts. */
-import portrait from "../assets/nagasushmitha.webp";
+import portrait from "../assets/nagasushmitha.jpeg";
 
 export const PORTRAIT = portrait;
 
@@ -15,7 +15,7 @@ interface Beat {
 const BEATS: Beat[] = [
   {
     label: "The evolution",
-    body: "Self-taught from 2014, then levelled up through elite masterclasses with international beauty icons — where the high-end technical precision came from.",
+    body: "Self-taught, then elevated through elite masterclasses with international beauty icons—bringing high-end technical precision to every look.",
   },
   {
     label: "The reach",
@@ -53,14 +53,16 @@ const FRAME = [
   "upto-560:hidden",
 ].join(" ");
 
-/* The source is a tall 2:3 full-body frame and the arch is 3:4, so it crops
-   ~10% off the bottom. 16% holds her face and the rose across the upper 40%
-   of the arch; retune it first if the photo is swapped. (The X value is inert
-   at this aspect ratio — cover leaves no horizontal overflow — and is kept
-   only so the crop still lands if the arch is reshaped.) */
+/* The source is now a 789×502 landscape illustration on a flat field, so the
+   crop runs the other way: the 4:5 arch shows its full height and takes ~49%
+   off the width. Her figure spans 23%–69% of that width, left of centre, so
+   42% is what lands it in the middle of the arch with even margin either side
+   — retune it first if the photo is swapped. (Y is the inert one at this
+   aspect ratio — cover leaves no vertical overflow — and is kept only so the
+   crop still lands if the arch is reshaped.) */
 const IMG = [
   "block h-full w-full animate-about-burns object-cover",
-  "[object-position:55%_16%] [will-change:transform]",
+  "[object-position:42%_50%] [will-change:transform]",
   "motion-reduce:animate-none",
 ].join(" ");
 
@@ -79,7 +81,14 @@ export default function AboutSection() {
       <div className={INNER}>
         <figure className="relative upto-980:w-full upto-980:max-w-105">
           <span className={FRAME} aria-hidden="true" />
-          <div className="relative aspect-3/4 overflow-hidden rounded-[200px_200px_12px_12px] bg-blush">
+          {/* Both the tint and the hairline are the illustration's doing. Its
+              field is #f9f4f1, so blush-soft is the placeholder that does not
+              flash when the image lands — and that same near-white field is
+              too close to the white card to draw its own edge, so the arch
+              silhouette has to come from a border now rather than from the
+              photo's own dark background. 4:5 over 3:4 for the same reason
+              the crop moved: it leaves the figure room inside the frame. */}
+          <div className="relative aspect-4/5 overflow-hidden rounded-[200px_200px_12px_12px] border border-border-soft bg-blush-soft">
             {/* Still lazy, and more so than before: the markup now reaches the
                 browser during HTML parse rather than after React has mounted,
                 so an eager portrait would be in the queue alongside the banner
@@ -88,7 +97,7 @@ export default function AboutSection() {
             <img
               className={IMG}
               src={PORTRAIT}
-              alt="Naga Sushmitha holding a red rose"
+              alt="Illustrated portrait of Naga Sushmitha"
               loading="lazy"
             />
           </div>

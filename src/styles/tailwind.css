@@ -243,10 +243,15 @@
   }
 }
 
-/* ── About portrait ────────────────────────────────────────────────────── */
+/* ── About portrait ──────────────────────────────────────────────────────
+   Used by AboutSection and nothing else. The push used to run to 1.09, which
+   a photograph with a street behind it absorbs. The portrait is an
+   illustration on a flat field now, and there is no depth for the push to
+   read against — all it does is grow the figure until her hair clips the
+   sides of the arch. 1.045 keeps the drift alive and keeps her inside it. */
 @keyframes about-burns {
-  from { transform: scale(1.01); }
-  to   { transform: scale(1.09); }
+  from { transform: scale(1); }
+  to   { transform: scale(1.045); }
 }
 
 /* ── Reel: cross-dissolve ──────────────────────────────────────────────────
