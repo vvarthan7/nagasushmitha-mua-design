@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { beforeImage, afterImage } from "../data";
+import beforeImage from "../assets/beforeafter/before-1.webp";
+import afterImage from "../assets/beforeafter/after-1.webp";
 
 const VIEWER = [
   "relative aspect-5/4 cursor-ew-resize touch-pan-y overflow-hidden",
@@ -8,7 +9,7 @@ const VIEWER = [
 
 export default function BeforeAfter() {
   /** Where the wipe sits, as a percentage of the viewer's width. */
-  const [split, setSplit] = useState(56);
+  const [split, setSplit] = useState(73);
 
   const scrubTo = (clientX: number, el: HTMLElement) => {
     const rect = el.getBoundingClientRect();

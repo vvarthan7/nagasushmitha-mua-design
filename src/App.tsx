@@ -12,6 +12,7 @@ import WhatsAppFab from "./components/WhatsAppFab";
 import type { GalleryCategory } from "./types";
 import Marquee from "./components/Marquee";
 import AboutSection from "./components/AboutSection";
+import BeforeAfter from "./components/BeforeAfter";
 
 /** The bar and the banner: everything above the prerendered block. */
 export function App() {
@@ -26,7 +27,7 @@ export function App() {
       <Services />
       <BookingSteps />
       <GalleryStrip defaultCategory={defaultCategory} />
-      {/* <BeforeAfter /> */}
+      <BeforeAfter />
       <Testimonials />
       <Faq />
       <InstagramFeed />
