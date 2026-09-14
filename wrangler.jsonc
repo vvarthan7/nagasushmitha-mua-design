@@ -56,7 +56,7 @@
     // AT LAUNCH: set this to true and delete `run_worker_first` above, in one
     // commit, then push to main. Confirm with:
     //     curl -s https://nsmakeupartistry.com/api/health
-    "LAUNCHED": false,
+    "LAUNCHED": true,
 
     // Read only by the holding page, which has no bundle to be inlined into.
     // The site itself uses VITE_WHATSAPP_NUMBER, a Build variable, and the two
